@@ -73,3 +73,36 @@ test('seedDemoData populates rich curriculum and accounts idempotently on isolat
     }
   }
 });
+
+test('buildAuthCookies emits Partitioned SameSite=None over HTTPS iframe and SameSite=Lax over HTTP', () => {
+  const { buildAuthCookies, clearAuthCookies } = require('../middleware/security');
+
+  const iframeHttpsReq = {
+    headers: {
+      'x-forwarded-proto': 'https',
+      'sec-fetch-dest': 'iframe',
+      'sec-fetch-site': 'cross-site'
+    }
+  };
+  const iframeCookies = buildAuthCookies('tok123', 'csrf123', 'dev123', iframeHttpsReq);
+  assert.equal(iframeCookies.length, 3);
+  for (const c of iframeCookies) {
+    assert.match(c, /SameSite=None; Secure; Partitioned/);
+  }
+  const clearedIframe = clearAuthCookies(iframeHttpsReq);
+  for (const c of clearedIframe) {
+    assert.match(c, /SameSite=None; Secure; Partitioned/);
+  }
+
+  const localHttpReq = {
+    headers: {
+      host: '127.0.0.1:3000'
+    }
+  };
+  const localCookies = buildAuthCookies('tok123', 'csrf123', 'dev123', localHttpReq);
+  for (const c of localCookies) {
+    assert.match(c, /SameSite=Lax/);
+    assert.doesNotMatch(c, /SameSite=None/);
+  }
+});
+

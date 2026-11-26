@@ -59,69 +59,105 @@ export function registerAdminMethods(proto) {
       const pendingQuestions = Number(d.pending_questions_count || 0);
       const liveSessionsCount = (d.live_sessions || []).length;
 
+      this.mobileDrawerOpen = false;
+      document.body.classList.remove('drawer-open');
+
       root.innerHTML = `
         <div class="app-shell fade-in">
-          <aside class="app-sidebar no-print">
-            <div>
-              <div class="sidebar-user-card">
-                <img src="/assets/logo.png" style="width:54px; height:54px; border-radius:50%; border:2px solid var(--gold-400); margin-bottom:6px;" />
-                <div style="font-weight:900; color:var(--gold-400); font-size:0.95rem;">${this.esc(this.user.full_name || 'لوحة الإدارة')}</div>
-                <div style="font-size:0.75rem; color:var(--text-secondary);">استوديو الإدارة الشاملة • ${this.esc(this.user.phone || '')}</div>
+          <div id="sidebarDrawerBackdrop" class="sidebar-drawer-backdrop" data-click="closeMobileSidebar" aria-hidden="true"></div>
+          <aside class="app-sidebar no-print" aria-label="قائمة الإدارة">
+            <div class="sidebar-scroll-body">
+              <div class="sidebar-profile">
+                <img src="/assets/logo.png" alt="شعار منصة متن" class="sidebar-profile-avatar" />
+                <div class="sidebar-profile-meta">
+                  <strong class="sidebar-profile-name">${this.esc(this.user.full_name || 'لوحة الإدارة')}</strong>
+                  <span class="sidebar-profile-sub">استوديو الإدارة الشاملة</span>
+                  <span class="sidebar-status-line is-active" dir="ltr">
+                    ${this.icon('crown', 12)}
+                    <span>${this.esc(this.user.phone || '')}</span>
+                  </span>
+                </div>
+                <button type="button" class="sidebar-drawer-close" data-click="closeMobileSidebar" aria-label="إغلاق القائمة">
+                  ${this.icon('x', 16)}
+                </button>
               </div>
 
-              <nav class="sidebar-nav" style="margin-top:16px;">
-                <button class="sidebar-link ${this.adminTab === 'lessons_list' && !this.activeLessonId ? 'active' : ''}" data-click="switchAdminTab" data-arg="lessons_list">
-                  <span class="nav-icon">${this.icon('book', 18)}</span>
-                  <span>المحاضرات والإحصائيات (${d.lessons.length})</span>
-                </button>
-                <button class="sidebar-link ${this.adminTab === 'add_lesson' ? 'active' : ''}" data-click="switchAdminTab" data-arg="add_lesson">
-                  <span class="nav-icon">${this.icon('plus', 18)}</span>
-                  <span>رفع محاضرة ومذكرة</span>
-                </button>
-                <button class="sidebar-link ${this.adminTab === 'live_sessions' ? 'active' : ''}" data-click="switchAdminTab" data-arg="live_sessions">
-                  <span class="nav-icon">${this.icon('radio', 18)}</span>
-                  <span>الحصص المباشرة (${liveSessionsCount})</span>
-                </button>
-                <button class="sidebar-link ${this.adminTab === 'notifications' ? 'active' : ''}" data-click="switchAdminTab" data-arg="notifications">
-                  <span class="nav-icon">${this.icon('bell', 18)}</span>
-                  <span>إشعارات الطلاب</span>
-                </button>
-                <button class="sidebar-link ${this.adminTab === 'exams' ? 'active' : ''}" data-click="switchAdminTab" data-arg="exams">
-                  <span class="nav-icon">${this.icon('file-text', 18)}</span>
-                  <span>إنشاء امتحان أو واجب</span>
-                </button>
-                <button class="sidebar-link ${this.adminTab === 'retakes' ? 'active' : ''}" data-click="switchAdminTab" data-arg="retakes">
-                  <span class="nav-icon">${this.icon('alert-triangle', 18)}</span>
-                  <span>الراسبون والملحق (${d.failed_submissions.length})</span>
-                </button>
-                <button class="sidebar-link ${this.adminTab === 'students' ? 'active' : ''}" data-click="switchAdminTab" data-arg="students">
-                  <span class="nav-icon">${this.icon('users', 18)}</span>
-                  <span>الطلاب والأجهزة (${totalStudents})</span>
-                </button>
-                <button class="sidebar-link ${this.adminTab === 'vouchers' ? 'active' : ''}" data-click="switchAdminTab" data-arg="vouchers">
-                  <span class="nav-icon">${this.icon('ticket', 18)}</span>
-                  <span>كروت الشحن (${totalVouchers})</span>
-                </button>
-                <button class="sidebar-link ${this.adminTab === 'weekly_reports' ? 'active' : ''}" data-click="switchAdminTab" data-arg="weekly_reports">
-                  <span class="nav-icon">${this.icon('calendar', 18)}</span>
-                  <span>متابعة الجمعة لأولياء الأمور</span>
-                </button>
-                <button class="sidebar-link ${this.adminTab === 'questions' ? 'active' : ''}" data-click="switchAdminTab" data-arg="questions">
-                  <span class="nav-icon">${this.icon('help-circle', 18)}</span>
-                  <span>أسئلة الطلاب (${pendingQuestions})</span>
-                </button>
-                <button class="sidebar-link ${this.adminTab === 'security' ? 'active' : ''}" data-click="switchAdminTab" data-arg="security">
-                  <span class="nav-icon">${this.icon('shield', 18)}</span>
-                  <span>الحماية والسجلات</span>
-                </button>
-                <button class="sidebar-link ${this.adminTab === 'settings' ? 'active' : ''}" data-click="switchAdminTab" data-arg="settings">
-                  <span class="nav-icon">${this.icon('settings', 18)}</span>
-                  <span>إعدادات المنصة</span>
-                </button>
-              </nav>
+              <div class="sidebar-group">
+                <div class="sidebar-group-label">المحتوى التعليمي</div>
+                <nav class="sidebar-nav">
+                  <button type="button" class="sidebar-link ${this.adminTab === 'lessons_list' && !this.activeLessonId ? 'active' : ''}" data-click="switchAdminTab" data-arg="lessons_list">
+                    <span class="nav-icon">${this.icon('book', 17)}</span>
+                    <span class="sidebar-link-label">المحاضرات والإحصائيات</span>
+                    <span class="sidebar-count">${d.lessons.length}</span>
+                  </button>
+                  <button type="button" class="sidebar-link ${this.adminTab === 'add_lesson' ? 'active' : ''}" data-click="switchAdminTab" data-arg="add_lesson">
+                    <span class="nav-icon">${this.icon('plus', 17)}</span>
+                    <span class="sidebar-link-label">رفع محاضرة ومذكرة</span>
+                  </button>
+                  <button type="button" class="sidebar-link ${this.adminTab === 'exams' ? 'active' : ''}" data-click="switchAdminTab" data-arg="exams">
+                    <span class="nav-icon">${this.icon('file-text', 17)}</span>
+                    <span class="sidebar-link-label">إنشاء امتحان أو واجب</span>
+                  </button>
+                  <button type="button" class="sidebar-link ${this.adminTab === 'live_sessions' ? 'active' : ''}" data-click="switchAdminTab" data-arg="live_sessions">
+                    <span class="nav-icon">${this.icon('radio', 17)}</span>
+                    <span class="sidebar-link-label">الحصص المباشرة</span>
+                    ${liveSessionsCount > 0 ? `<span class="sidebar-count is-accent">${liveSessionsCount}</span>` : ''}
+                  </button>
+                </nav>
+              </div>
+
+              <div class="sidebar-group">
+                <div class="sidebar-group-label">الطلاب والمتابعة</div>
+                <nav class="sidebar-nav">
+                  <button type="button" class="sidebar-link ${this.adminTab === 'students' ? 'active' : ''}" data-click="switchAdminTab" data-arg="students">
+                    <span class="nav-icon">${this.icon('users', 17)}</span>
+                    <span class="sidebar-link-label">الطلاب والأجهزة</span>
+                    <span class="sidebar-count">${totalStudents}</span>
+                  </button>
+                  <button type="button" class="sidebar-link ${this.adminTab === 'retakes' ? 'active' : ''}" data-click="switchAdminTab" data-arg="retakes">
+                    <span class="nav-icon">${this.icon('alert-triangle', 17)}</span>
+                    <span class="sidebar-link-label">الراسبون والملحق</span>
+                    ${d.failed_submissions.length > 0 ? `<span class="sidebar-count is-danger">${d.failed_submissions.length}</span>` : ''}
+                  </button>
+                  <button type="button" class="sidebar-link ${this.adminTab === 'questions' ? 'active' : ''}" data-click="switchAdminTab" data-arg="questions">
+                    <span class="nav-icon">${this.icon('help-circle', 17)}</span>
+                    <span class="sidebar-link-label">أسئلة الطلاب</span>
+                    ${pendingQuestions > 0 ? `<span class="sidebar-count is-accent">${pendingQuestions}</span>` : ''}
+                  </button>
+                  <button type="button" class="sidebar-link ${this.adminTab === 'weekly_reports' ? 'active' : ''}" data-click="switchAdminTab" data-arg="weekly_reports">
+                    <span class="nav-icon">${this.icon('calendar', 17)}</span>
+                    <span class="sidebar-link-label">متابعة الجمعة للأهل</span>
+                  </button>
+                  <button type="button" class="sidebar-link ${this.adminTab === 'notifications' ? 'active' : ''}" data-click="switchAdminTab" data-arg="notifications">
+                    <span class="nav-icon">${this.icon('bell', 17)}</span>
+                    <span class="sidebar-link-label">إشعارات الطلاب</span>
+                  </button>
+                </nav>
+              </div>
+
+              <div class="sidebar-group">
+                <div class="sidebar-group-label">الاشتراكات والنظام</div>
+                <nav class="sidebar-nav">
+                  <button type="button" class="sidebar-link ${this.adminTab === 'vouchers' ? 'active' : ''}" data-click="switchAdminTab" data-arg="vouchers">
+                    <span class="nav-icon">${this.icon('ticket', 17)}</span>
+                    <span class="sidebar-link-label">كروت الشحن</span>
+                    <span class="sidebar-count">${totalVouchers}</span>
+                  </button>
+                  <button type="button" class="sidebar-link ${this.adminTab === 'security' ? 'active' : ''}" data-click="switchAdminTab" data-arg="security">
+                    <span class="nav-icon">${this.icon('shield', 17)}</span>
+                    <span class="sidebar-link-label">الحماية والسجلات</span>
+                  </button>
+                  <button type="button" class="sidebar-link ${this.adminTab === 'settings' ? 'active' : ''}" data-click="switchAdminTab" data-arg="settings">
+                    <span class="nav-icon">${this.icon('settings', 17)}</span>
+                    <span class="sidebar-link-label">إعدادات المنصة</span>
+                  </button>
+                </nav>
+              </div>
             </div>
 
-            <button class="btn btn-outline-gold btn-sm" style="width:100%;" data-click="loadAdminDashboard">${this.icon('refresh', 15)} <span>تحديث البيانات</span></button>
+            <div class="sidebar-footer">
+              <button type="button" class="btn btn-outline-gold btn-sm btn-block" data-click="loadAdminDashboard">${this.icon('refresh', 15)} <span>تحديث البيانات</span></button>
+            </div>
           </aside>
 
           <section class="app-main">
@@ -1410,6 +1446,7 @@ export function registerAdminMethods(proto) {
           method: 'POST',
           credentials: 'same-origin',
           headers: {
+            ...(this.authToken ? { Authorization: `Bearer ${this.authToken}` } : {}),
             'X-CSRF-Token': csrf,
             'X-Device-Id': this.deviceId,
             'X-File-Name': encodeURIComponent(file.name),
@@ -1471,6 +1508,7 @@ export function registerAdminMethods(proto) {
             method: 'POST',
             credentials: 'same-origin',
             headers: {
+              ...(this.authToken ? { Authorization: `Bearer ${this.authToken}` } : {}),
               'X-CSRF-Token': csrf,
               'X-Device-Id': this.deviceId,
               'X-Upload-Type': uploadType,

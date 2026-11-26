@@ -315,7 +315,7 @@ async function handleAuthRoutes(req, res, ctx) {
         csrf_token: csrfToken,
         user: sanitizeUser(createdUser)
       }, {
-        'Set-Cookie': buildAuthCookies(token, csrfToken, createdUser.device_id)
+        'Set-Cookie': buildAuthCookies(token, csrfToken, createdUser.device_id, req)
       });
       return true;
     }
@@ -365,7 +365,7 @@ async function handleAuthRoutes(req, res, ctx) {
         csrf_token: csrfToken,
         user: sanitizeUser(createdUser)
       }, {
-        'Set-Cookie': buildAuthCookies(token, csrfToken, createdUser.device_id)
+        'Set-Cookie': buildAuthCookies(token, csrfToken, createdUser.device_id, req)
       });
       return true;
     }
@@ -547,7 +547,7 @@ async function handleAuthRoutes(req, res, ctx) {
       csrf_token: csrfToken,
       user: sanitizeUser(updatedUser)
     }, {
-      'Set-Cookie': buildAuthCookies(token, csrfToken, updatedUser.device_id)
+      'Set-Cookie': buildAuthCookies(token, csrfToken, updatedUser.device_id, req)
     });
     return true;
   }
@@ -836,7 +836,7 @@ async function handleAuthRoutes(req, res, ctx) {
         csrf_token: csrfToken,
         user: sanitizeUser(user)
       }, {
-        'Set-Cookie': buildAuthCookies(token, csrfToken, null)
+        'Set-Cookie': buildAuthCookies(token, csrfToken, null, req)
       });
       return true;
     }
@@ -909,7 +909,7 @@ async function handleAuthRoutes(req, res, ctx) {
       csrf_token: csrfToken,
       user: sanitizeUser(user)
     }, {
-      'Set-Cookie': buildAuthCookies(token, csrfToken, user.device_id)
+      'Set-Cookie': buildAuthCookies(token, csrfToken, user.device_id, req)
     });
     return true;
   }
@@ -974,7 +974,7 @@ async function handleAuthRoutes(req, res, ctx) {
       writeAuditLog(req, user, 'USER_LOGOUT', 'user', user.id);
     }
     sendJson(req, res, 200, { message: 'تم تسجيل الخروج وإبطال الجلسة بنجاح.' }, {
-      'Set-Cookie': clearAuthCookies()
+      'Set-Cookie': clearAuthCookies(req)
     });
     return true;
   }

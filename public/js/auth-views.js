@@ -1,5 +1,27 @@
 import { SUBJECTS_META, GRADES_META } from './constants.js';
 
+const COURSE_STAGE_GROUPS = {
+  fiqh: ['prep', 'sec'],
+  tafseer: ['prep', 'sec'],
+  hadith: ['prep', 'sec'],
+  tawheed: ['prep', 'sec'],
+  seerah: ['prep'],
+  tajweed: ['prep'],
+  mawareeth: ['sec']
+};
+
+const COURSE_SYLLABUS_META = {
+  fiqh: 'فقه العبادات والمعاملات والأحوال الشخصية',
+  tafseer: 'تفسير السور المقررة والأسرار البلاغية',
+  hadith: 'شرح الأحاديث النبوية وتراجم الرواة',
+  tawheed: 'الإلهيات والنبوات والسمعيات الأزهرية',
+  seerah: 'الغزوات والدروس التربوية للمرحلة الإعدادية',
+  tajweed: 'أحكام التلاوة والمخارج والصفات بالتطبيق',
+  mawareeth: 'أصحاب الفروض والعصبات وحل المسائل'
+};
+
+const ARABIC_INDEX = ['٠١', '٠٢', '٠٣', '٠٤', '٠٥', '٠٦', '٠٧', '٠٨'];
+
 export function registerAuthMethods(proto) {
   Object.assign(proto, {
     renderNavbar() {
@@ -14,10 +36,12 @@ export function registerAuthMethods(proto) {
       `;
 
       if (!this.user) {
+        const isLogin = this.currentView === 'login';
+        const isRegister = this.currentView === 'register';
         nav.innerHTML = `
           ${themeBtn}
-          <button type="button" class="btn btn-outline-gold btn-sm" data-click="openLoginModal">${this.icon('lock', 15)} <span>دخول</span></button>
-          <button type="button" class="btn btn-gold btn-sm" data-click="openRegisterModal">${this.icon('user-check', 15)} <span>حساب جديد</span></button>
+          <button type="button" class="btn ${isLogin ? 'btn-gold' : 'btn-outline-gold'} btn-sm nav-auth-btn" data-click="openLoginModal">${this.icon('log-in', 15)} <span>دخول</span></button>
+          <button type="button" class="btn ${isRegister ? 'btn-emerald' : 'btn-gold'} btn-sm nav-auth-btn" data-click="openRegisterModal">${this.icon('user-check', 15)} <span class="nav-reg-full">حساب جديد</span><span class="nav-reg-short">تسجيل</span></button>
         `;
         return;
       }
@@ -32,6 +56,9 @@ export function registerAuthMethods(proto) {
 
       nav.innerHTML = `
         ${roleMeta}
+        <button type="button" class="btn btn-outline-gold btn-sm nav-mobile-menu-btn" data-click="toggleMobileSidebar" title="القائمة الجانبية" aria-label="فتح القائمة الجانبية">
+          ${this.icon('menu', 17)}
+        </button>
         ${themeBtn}
         ${this.user.role === 'student' ? `
           <button type="button" class="btn btn-outline-gold btn-sm nav-bell-btn" data-click="openNotificationsModal" title="الإشعارات" aria-label="الإشعارات">
@@ -85,10 +112,19 @@ export function registerAuthMethods(proto) {
 
     renderLanding() {
       this.currentView = 'landing';
+      this.renderNavbar();
       const root = document.getElementById('appRoot');
       const supportWaUrl = this.formatSupportWaUrl('السلام عليكم، أريد الاستفسار عن الاشتراك في منصة متن');
       const stats = this.publicStats || {};
       const hasStats = Number(stats.lessonsCount || 0) > 0 || Number(stats.examsCount || 0) > 0;
+      const teacherDisplay = String(this.publicSettings.teacher_name || 'فضيلة الأستاذ محمد عبد الله').replace(/عبد\s+الله/g, 'عبد\u00A0الله');
+      const stageFilter = this.landingCourseStage || 'all';
+
+      const allCourses = Object.entries(SUBJECTS_META);
+      const filteredCourses = allCourses.filter(([key]) => {
+        if (stageFilter === 'all') return true;
+        return (COURSE_STAGE_GROUPS[key] || []).includes(stageFilter);
+      });
 
       root.innerHTML = `
         <div class="fade-in">
@@ -100,7 +136,7 @@ export function registerAuthMethods(proto) {
               </div>
               <h2 class="hero-title amiri-font">
                 <span>${this.esc(this.publicSettings.platform_name || 'منصة مَتْن (MATN)')}</span><br/>
-                بإشراف <span class="hero-title-accent">${this.esc(this.publicSettings.teacher_name || 'فضيلة الأستاذ محمد عبد الله')}</span>
+                بإشراف <span class="hero-title-accent">${this.esc(teacherDisplay)}</span>
               </h2>
               <p class="hero-subtitle">
                 شرح تأصيلي ميسّر للعلوم الشرعية مع مذكرات منظمة، امتحانات إلكترونية بالتصحيح الفوري، وبنك أخطاء ذكي، ومتابعة أسبوعية لولي الأمر.
@@ -108,8 +144,8 @@ export function registerAuthMethods(proto) {
 
               <div class="hero-cta-row">
                 <button type="button" class="btn btn-gold" data-click="openRegisterModal">${this.icon('user-check', 17)} <span>ابدأ الآن — حساب طالب جديد</span></button>
-                <button type="button" class="btn btn-outline-gold" data-click="openLoginModal">${this.icon('lock', 17)} <span>تسجيل الدخول</span></button>
-                <button type="button" class="btn btn-ghost-subtle" data-click="openPlatformGuideVideoModal">${this.icon('play', 16)} <span>دليل المنصة بالفيديو</span></button>
+                <button type="button" class="btn btn-outline-gold" data-click="openLoginModal">${this.icon('log-in', 16)} <span>تسجيل الدخول</span></button>
+                <button type="button" class="btn btn-ghost-subtle" data-click="openPlatformGuideVideoModal">${this.icon('play', 15)} <span>دليل الفيديو</span></button>
               </div>
 
               ${hasStats ? `
@@ -142,30 +178,72 @@ export function registerAuthMethods(proto) {
           </section>
 
           <div class="container">
-            <section class="courses-section">
+            <section class="pillars-strip" aria-label="مميزات منصة متن">
+              <div class="pillar-item">
+                <div class="pillar-icon">${this.icon('shield-check', 20)}</div>
+                <div>
+                  <h4>حماية متكاملة للمحتوى</h4>
+                  <p>بث مؤمّن وربط بجهاز واحد وعلامة مائية لحفظ الحقوق.</p>
+                </div>
+              </div>
+              <div class="pillar-item">
+                <div class="pillar-icon">${this.icon('award', 20)}</div>
+                <div>
+                  <h4>امتحانات وبنك أخطاء ذكي</h4>
+                  <p>تصحيح فوري على النظام الأزهري مع مراجعة تلقائية للأخطاء.</p>
+                </div>
+              </div>
+              <div class="pillar-item">
+                <div class="pillar-icon">${this.icon('book-open', 20)}</div>
+                <div>
+                  <h4>مذكرات PDF منظمة</h4>
+                  <p>قراءة واضحة للمتون والشرح على الهاتف والكمبيوتر.</p>
+                </div>
+              </div>
+              <div class="pillar-item">
+                <div class="pillar-icon">${this.icon('users', 20)}</div>
+                <div>
+                  <h4>متابعة أسبوعية لولي الأمر</h4>
+                  <p>تقارير منتظمة بمستوى الطالب وحضوره ودرجات اختبارات الأسبوع.</p>
+                </div>
+              </div>
+            </section>
+
+            <section class="courses-section" id="coursesCatalog">
               <div class="courses-section-head">
                 <div>
                   <h3 class="section-title">${this.icon('book-open', 20)} <span>الكورسات والمواد الشرعية</span></h3>
-                  <p class="courses-section-sub">اختر المادة المناسبة لمرحلتك الدراسية وابدأ المذاكرة بالترتيب المنهجي</p>
+                  <p class="courses-section-sub">منهج أزهري متكامل ومقسّم بوضوح لكل مرحلة دراسية</p>
                 </div>
-                <button type="button" class="btn btn-outline-gold btn-sm" data-click="openRegisterModal">${this.icon('ticket', 15)} <span>تفعيل كود اشتراك</span></button>
+
+                <div class="courses-stage-tabs" role="tablist" aria-label="تصفية المواد حسب المرحلة">
+                  <button type="button" class="stage-filter-btn ${stageFilter === 'all' ? 'active' : ''}" data-click="filterLandingCourses" data-arg="all">الكل (${allCourses.length})</button>
+                  <button type="button" class="stage-filter-btn ${stageFilter === 'sec' ? 'active' : ''}" data-click="filterLandingCourses" data-arg="sec">الثانوية الأزهرية</button>
+                  <button type="button" class="stage-filter-btn ${stageFilter === 'prep' ? 'active' : ''}" data-click="filterLandingCourses" data-arg="prep">الإعدادية الأزهرية</button>
+                </div>
               </div>
 
               <div class="courses-grid">
-                ${Object.entries(SUBJECTS_META).map(([, s]) => `
+                ${filteredCourses.map(([key, s], idx) => `
                   <article class="course-card">
-                    <div class="course-card-banner">
-                      <div class="course-card-icon">${this.icon(s.iconName || 'book', 22)}</div>
-                      <span class="course-stage-caption">${this.esc(s.stage || 'أزهري')}</span>
+                    <div class="course-card-top">
+                      <div class="course-card-icon">${this.icon(s.iconName || 'book', 21)}</div>
+                      <div class="course-card-meta-right">
+                        <span class="course-index">${ARABIC_INDEX[idx] || String(idx + 1)}</span>
+                        <span class="course-stage-caption">${this.esc(s.stage || 'أزهري')}</span>
+                      </div>
                     </div>
                     <div class="course-card-body">
                       <h4 class="course-card-title">${this.esc(s.name)}</h4>
                       <p class="course-card-desc">${this.esc(s.desc)}</p>
+                      <div class="course-card-syllabus">
+                        <span>${this.esc(COURSE_SYLLABUS_META[key] || 'شرح منهجي ومذكرات واختبارات')}</span>
+                      </div>
                     </div>
                     <div class="course-card-footer">
-                      <span class="course-instructor">${this.icon('award', 14)} <span>أ. محمد عبد الله</span></span>
+                      <span class="course-instructor">${this.icon('award', 14)} <span>أ. محمد عبد\u00A0الله</span></span>
                       <button type="button" class="course-cta-link" data-click="openLoginModal">
-                        <span>ابدأ الكورس</span>
+                        <span>ابدأ المادة</span>
                         ${this.icon('arrow-left', 14)}
                       </button>
                     </div>
@@ -173,37 +251,339 @@ export function registerAuthMethods(proto) {
                 `).join('')}
               </div>
             </section>
+          </div>
 
-            <section class="section-card guide-showcase-card">
-              <div class="guide-showcase-grid">
-                <div>
-                  <h3 class="section-title">${this.icon('video', 20)} <span>دليل التسجيل والمذاكرة في دقيقتين</span></h3>
-                  <p class="section-subtitle-muted">
-                    شاهد خطوات إنشاء الحساب، تفعيل الكود الشهري، وحل الامتحانات لفتح الدروس بالتتابع.
-                  </p>
-                  <div class="highlights-compact-list">
-                    <div class="highlight-compact-item">${this.icon('shield-check', 18)} <span>حماية كاملة للمحتوى وربط بجهاز واحد</span></div>
-                    <div class="highlight-compact-item">${this.icon('users', 18)} <span>تقارير متابعة أسبوعية لولي الأمر</span></div>
-                    <div class="highlight-compact-item">${this.icon('award', 18)} <span>امتحانات على النظام الأزهري وبنك أخطاء</span></div>
-                    <div class="highlight-compact-item">${this.icon('book-open', 18)} <span>مذكرات PDF منظمة على الهاتف والكمبيوتر</span></div>
+          <footer class="site-footer">
+            <div class="site-footer-inner">
+              <div class="footer-col footer-brand-col">
+                <div class="footer-brand-row">
+                  <img src="/assets/logo.png" alt="شعار منصة متن" class="footer-logo" />
+                  <div>
+                    <strong class="footer-brand-title">${this.esc(this.publicSettings.platform_name || 'منصة مَتْن (MATN)')}</strong>
+                    <span class="footer-brand-sub">${this.esc(teacherDisplay)}</span>
                   </div>
                 </div>
-                <div class="guide-video-frame">
-                  <video src="/assets/matn_guide_video.mp4" controls playsinline preload="metadata"></video>
+                <p class="footer-mission">
+                  منصة تعليمية متخصصة في شرح المواد الشرعية للأزهر الشريف بمنهجية واضحة، مذكرات محررة، واختبارات تفاعلية منتظمة.
+                </p>
+              </div>
+
+              <div class="footer-col">
+                <h4 class="footer-col-title">روابط سريعة</h4>
+                <ul class="footer-links-list">
+                  <li><button type="button" class="footer-link-btn" data-click="scrollToCourses">${this.icon('book-open', 14)} <span>الكورسات والمواد الشرعية</span></button></li>
+                  <li><button type="button" class="footer-link-btn" data-click="openLoginModal">${this.icon('log-in', 14)} <span>تسجيل الدخول</span></button></li>
+                  <li><button type="button" class="footer-link-btn" data-click="openRegisterModal">${this.icon('user-check', 14)} <span>إنشاء حساب طالب جديد</span></button></li>
+                  <li><button type="button" class="footer-link-btn" data-click="openPlatformGuideVideoModal">${this.icon('play', 14)} <span>دليل التسجيل والمذاكرة بالفيديو</span></button></li>
+                </ul>
+              </div>
+
+              <div class="footer-col">
+                <h4 class="footer-col-title">الدعم والتواصل</h4>
+                <ul class="footer-links-list">
+                  ${supportWaUrl ? `<li><a href="${this.esc(supportWaUrl)}" target="_blank" rel="noopener noreferrer" class="footer-link-btn">${this.icon('message-circle', 14)} <span>التواصل مع الدعم الفني</span></a></li>` : ''}
+                  <li><button type="button" class="footer-link-btn" data-click="openPrivacyPolicyModal">${this.icon('lock', 14)} <span>سياسة الخصوصية وشروط الاستخدام</span></button></li>
+                  <li class="footer-info-note">${this.icon('calendar', 14)} <span>تقارير متابعة تلقائية لولي الأمر كل جمعة</span></li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="site-footer-bottom">
+              <span>جميع الحقوق محفوظة © ${new Date().getFullYear()} ${this.esc(this.publicSettings.platform_name || 'منصة مَتْن (MATN)')}</span>
+              <span>للمرحلتين الإعدادية والثانوية الأزهرية</span>
+            </div>
+          </footer>
+        </div>
+      `;
+    },
+
+    /* ========================================================================
+       STANDALONE FULL-PAGE AUTH VIEWS (#/login, #/register, #/forgot-password)
+       ======================================================================== */
+
+    openLoginModal() {
+      this.openLoginPage();
+    },
+
+    openLoginPage() {
+      this.closeModal();
+      this.renderLoginPage(true);
+    },
+
+    renderLoginPage(updateHash = true) {
+      this.currentView = 'login';
+      if (updateHash) this.setHashRoute('/login');
+      this.renderNavbar();
+      const root = document.getElementById('appRoot');
+      const teacherDisplay = String(this.publicSettings.teacher_name || 'فضيلة الأستاذ محمد عبد الله').replace(/عبد\s+الله/g, 'عبد\u00A0الله');
+
+      root.innerHTML = `
+        <div class="auth-page-wrap fade-in">
+          <div class="auth-split-card">
+            <section class="auth-form-pane">
+              <div class="auth-top-bar">
+                <button type="button" class="auth-back-link" data-click="navigateHome">
+                  ${this.icon('arrow-right', 15)}
+                  <span>العودة للرئيسية</span>
+                </button>
+                <button type="button" class="auth-switch-link" data-click="openRegisterModal">
+                  <span>حساب جديد</span>
+                  ${this.icon('arrow-left', 14)}
+                </button>
+              </div>
+
+              <div class="auth-heading-block">
+                <h2 class="auth-page-title">تسجيل الدخول</h2>
+                <p class="auth-page-subtitle">أدخل رقم الهاتف وكلمة المرور للوصول إلى محاضراتك واختباراتك.</p>
+              </div>
+
+              ${this.renderDemoQuickAccessPanel(true)}
+
+              <form data-submit="handleLogin" class="auth-form">
+                <div class="form-group">
+                  <label for="loginPhone">رقم الهاتف</label>
+                  <input type="tel" id="loginPhone" class="form-control" placeholder="010xxxxxxxx" autocomplete="username" required />
                 </div>
+                <div class="form-group">
+                  <label for="loginPassword">كلمة المرور</label>
+                  <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" autocomplete="current-password" required />
+                </div>
+                <div class="auth-inline-row">
+                  <button type="button" class="auth-text-action" data-click="openForgotPasswordModal">
+                    ${this.icon('key', 14)}
+                    <span>نسيت كلمة المرور؟</span>
+                  </button>
+                </div>
+                <div id="loginErrorBox" style="display:none; margin-bottom:14px;"></div>
+                <button type="submit" id="loginSubmitBtn" class="btn btn-gold btn-block auth-submit-btn">
+                  ${this.icon('log-in', 17)}
+                  <span>دخول إلى المنصة</span>
+                </button>
+              </form>
+
+              <div class="auth-bottom-switch">
+                <span>طالب جديد في منصة مَتْن؟</span>
+                <button type="button" class="auth-text-action" data-click="openRegisterModal">أنشئ حسابك الآن</button>
               </div>
             </section>
 
-            <footer class="landing-footer">
-              <span>جميع الحقوق محفوظة © ${this.esc(this.publicSettings.platform_name || 'منصة مَتْن (MATN)')}</span>
-              <div class="landing-footer-actions">
-                ${supportWaUrl ? `<a href="${this.esc(supportWaUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-gold">${this.icon('message-circle', 15)} <span>تواصل مع الدعم</span></a>` : ''}
-                <button type="button" class="btn btn-sm btn-outline-gold" data-click="openPrivacyPolicyModal">${this.icon('lock', 15)} <span>سياسة الخصوصية</span></button>
+            <aside class="auth-brand-pane">
+              <div class="auth-brand-inner">
+                <img src="/assets/logo.png" alt="شعار منصة متن" class="auth-brand-logo" />
+                <span class="auth-brand-kicker">منصة العلوم الشرعية للأزهر الشريف</span>
+                <h3 class="auth-brand-heading">${this.esc(this.publicSettings.platform_name || 'منصة مَتْن (MATN)')}</h3>
+                <p class="auth-brand-teacher">${this.esc(teacherDisplay)}</p>
+                <ul class="auth-brand-points">
+                  <li>${this.icon('check-circle', 16)} <span>محاضرات مرئية محمية ومذكرات PDF منظمة</span></li>
+                  <li>${this.icon('check-circle', 16)} <span>اختبارات على النظام الأزهري وبنك أخطاء تفاعلي</span></li>
+                  <li>${this.icon('check-circle', 16)} <span>تقارير متابعة أسبوعية لولي الأمر</span></li>
+                </ul>
+                <button type="button" class="btn btn-outline-gold btn-sm auth-guide-btn" data-click="openPlatformGuideVideoModal">
+                  ${this.icon('play', 14)}
+                  <span>مشاهدة دليل الاستخدام بالفيديو</span>
+                </button>
               </div>
-            </footer>
+            </aside>
           </div>
         </div>
       `;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+
+    openRegisterModal() {
+      this.openRegisterPage();
+    },
+
+    openRegisterPage() {
+      this.closeModal();
+      this.renderRegisterPage(true);
+    },
+
+    renderRegisterPage(updateHash = true) {
+      this.currentView = 'register';
+      if (updateHash) this.setHashRoute('/register');
+      this.renderNavbar();
+      const root = document.getElementById('appRoot');
+      const isVoucherMode = this.registrationMode === 'voucher_code';
+      const isOtpMode = this.registrationMode === 'whatsapp_otp';
+      const teacherDisplay = String(this.publicSettings.teacher_name || 'فضيلة الأستاذ محمد عبد الله').replace(/عبد\s+الله/g, 'عبد\u00A0الله');
+
+      root.innerHTML = `
+        <div class="auth-page-wrap fade-in">
+          <div class="auth-split-card is-wide">
+            <section class="auth-form-pane">
+              <div class="auth-top-bar">
+                <button type="button" class="auth-back-link" data-click="navigateHome">
+                  ${this.icon('arrow-right', 15)}
+                  <span>العودة للرئيسية</span>
+                </button>
+                <button type="button" class="auth-switch-link" data-click="openLoginModal">
+                  <span>لديك حساب؟ دخول</span>
+                  ${this.icon('arrow-left', 14)}
+                </button>
+              </div>
+
+              <div class="auth-heading-block">
+                <h2 class="auth-page-title">إنشاء حساب طالب جديد</h2>
+                <p class="auth-page-subtitle">
+                  ${isOtpMode
+                    ? 'أدخل بياناتك الدراسية وسيتم إرسال رمز التفعيل إلى رقم الواتساب الخاص بك.'
+                    : 'أدخل بياناتك الدراسية وكود التفعيل لفتح المنصة والمحاضرات فوراً.'}
+                </p>
+              </div>
+
+              <form data-submit="handleRegister" class="auth-form">
+                <div class="form-group">
+                  <label for="regFullName">اسم الطالب رباعياً (٤ أسماء كاملة)</label>
+                  <input type="text" id="regFullName" class="form-control" placeholder="مثال: محمد أحمد عبد الله الشافعي" required />
+                </div>
+
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label for="regPhone">رقم هاتف الطالب</label>
+                    <input type="tel" id="regPhone" class="form-control" placeholder="010xxxxxxxx" required />
+                  </div>
+                  <div class="form-group">
+                    <label for="regParentPhone">رقم هاتف ولي الأمر</label>
+                    <input type="tel" id="regParentPhone" class="form-control" placeholder="010xxxxxxxx" required />
+                  </div>
+                </div>
+
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label for="regGrade">الصف الدراسي الأزهري</label>
+                    <select id="regGrade" class="form-control" data-change="onRegGradeChange">
+                      ${this.renderGradeOptions('grade_3')}
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="regBranch">الشعبة / المسار الدراسي</label>
+                    <select id="regBranch" class="form-control">
+                      <option value="scientific">القسم العلمي</option>
+                      <option value="literary">القسم الأدبي</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label for="regPassword">كلمة المرور (٨ أحرف على الأقل)</label>
+                    <input type="password" id="regPassword" class="form-control" placeholder="••••••••" minlength="8" required />
+                  </div>
+                  ${!isOtpMode ? `
+                    <div class="form-group">
+                      <label for="regActivationCode">كود التفعيل ${isVoucherMode ? '*' : '(اختياري)'}</label>
+                      <input type="text" id="regActivationCode" class="form-control" placeholder="MATN-DEMO-30D-001" style="text-align:center; font-weight:700; letter-spacing:1px;" ${isVoucherMode ? 'required' : ''} />
+                    </div>
+                  ` : ''}
+                </div>
+
+                <div class="auth-privacy-note">
+                  بتسجيلك فإنك توافق على
+                  <button type="button" class="auth-text-action" data-click="openPrivacyPolicyModal">سياسة الخصوصية وشروط الاستخدام</button>.
+                </div>
+
+                <div id="regErrorBox" style="display:none; margin-bottom:12px;"></div>
+
+                <button type="submit" class="btn btn-gold btn-block auth-submit-btn">
+                  ${this.icon(isOtpMode ? 'smartphone' : 'check-circle', 17)}
+                  <span>${isOtpMode ? 'تسجيل وإرسال كود الواتساب' : 'تسجيل وتفعيل الحساب الآن'}</span>
+                </button>
+              </form>
+
+              ${!isOtpMode ? `
+                <div class="auth-request-code-wrap">
+                  <button type="button" class="btn btn-outline-gold btn-sm btn-block" data-click="toggleRequestCodePanel">
+                    ${this.icon('ticket', 15)} <span>ليس لديك كود تفعيل؟ حوّل واطلبه من الدعم الآن</span>
+                  </button>
+                  <div id="regRequestCodeBox" style="display:none; margin-top:10px; background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:12px; padding:12px;">
+                    ${this.renderPaymentChannelsBox()}
+                    <div class="form-group" style="margin-bottom:8px;">
+                      <label for="regTransferNumber" style="font-size:0.78rem;">الرقم أو الحساب الذي حوّلت منه المبلغ</label>
+                      <input type="text" id="regTransferNumber" class="form-control" placeholder="اكتب رقم الهاتف أو حساب إنستا باي المحوَّل منه..." />
+                    </div>
+                    <button type="button" class="btn btn-whatsapp btn-sm btn-block" data-click="requestActivationCodeViaWhatsapp">
+                      ${this.icon('message-circle', 15)} <span>تواصل مع الدعم لطلب كود التفعيل</span>
+                    </button>
+                  </div>
+                </div>
+              ` : ''}
+
+              <div class="auth-bottom-switch">
+                <span>لديك حساب بالفعل؟</span>
+                <button type="button" class="auth-text-action" data-click="openLoginModal">سجّل دخولك الآن</button>
+              </div>
+            </section>
+
+            <aside class="auth-brand-pane">
+              <div class="auth-brand-inner">
+                <img src="/assets/logo.png" alt="شعار منصة متن" class="auth-brand-logo" />
+                <span class="auth-brand-kicker">انضم لطلاب منصة مَتْن</span>
+                <h3 class="auth-brand-heading">ابدأ رحلتك في التفوق الشرعي</h3>
+                <p class="auth-brand-teacher">${this.esc(teacherDisplay)}</p>
+                <ul class="auth-brand-points">
+                  <li>${this.icon('shield-check', 16)} <span>حساب شخصي مربوط بجهازك لحفظ تقدمك</span></li>
+                  <li>${this.icon('book-open', 16)} <span>تنظيم تلقائي للمواد حسب صفك وشعبتك</span></li>
+                  <li>${this.icon('trophy', 16)} <span>لوحة شرف وشارات إنجاز وشهادات تفوق</span></li>
+                </ul>
+                ${this.demoAccounts ? `
+                  <button type="button" class="btn btn-outline-gold btn-sm auth-guide-btn" data-click="demoLogin" data-arg="student">
+                    ${this.icon('zap', 14)}
+                    <span>أو جرّب المنصة فوراً كطالب تجريبي</span>
+                  </button>
+                ` : ''}
+              </div>
+            </aside>
+          </div>
+        </div>
+      `;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+
+    openForgotPasswordModal() {
+      this.openForgotPasswordPage();
+    },
+
+    openForgotPasswordPage() {
+      this.closeModal();
+      this.renderForgotPasswordPage(true);
+    },
+
+    renderForgotPasswordPage(updateHash = true) {
+      this.currentView = 'forgot_password';
+      if (updateHash) this.setHashRoute('/forgot-password');
+      this.renderNavbar();
+      const root = document.getElementById('appRoot');
+
+      root.innerHTML = `
+        <div class="auth-page-wrap fade-in">
+          <div class="auth-single-card">
+            <div class="auth-top-bar">
+              <button type="button" class="auth-back-link" data-click="openLoginModal">
+                ${this.icon('arrow-right', 15)}
+                <span>العودة لتسجيل الدخول</span>
+              </button>
+            </div>
+            <div class="auth-heading-block" style="text-align:center;">
+              <div style="color:var(--gold-400); margin-bottom:10px;">${this.icon('key', 34)}</div>
+              <h2 class="auth-page-title">استعادة كلمة المرور</h2>
+              <p class="auth-page-subtitle">أدخل رقم هاتفك المسجل لإرسال رمز إعادة التعيين عبر الواتساب.</p>
+            </div>
+
+            <form data-submit="handleForgotPassword" class="auth-form">
+              <div class="form-group">
+                <label for="forgotPhone">رقم الهاتف المسجل</label>
+                <input type="tel" id="forgotPhone" class="form-control" placeholder="010xxxxxxxx" required />
+              </div>
+              <button type="submit" class="btn btn-gold btn-block auth-submit-btn">
+                ${this.icon('smartphone', 16)}
+                <span>إرسال كود الاستعادة</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      `;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     },
 
     openPrivacyPolicyModal() {
@@ -229,45 +609,15 @@ export function registerAuthMethods(proto) {
       this.openModal(`
         <div class="card-meta-row">
           <h3 style="color:var(--gold-400); font-size:1.05rem; display:flex; align-items:center; gap:8px;">${this.icon('video', 18)} <span>فيديو شرح التسجيل واستخدام منصة مَتْن</span></h3>
-          <button type="button" class="btn btn-danger btn-sm" data-click="closeModal">${this.icon('x', 15)} <span>إيقاف وإغلاق</span></button>
+          <button type="button" class="btn btn-danger btn-sm" data-click="closeModal">${this.icon('x', 15)} <span>إغلاق</span></button>
         </div>
+        <p style="font-size:0.84rem; color:var(--text-secondary); margin-bottom:12px;">
+          شاهد خطوات إنشاء الحساب، تفعيل الكود الشهري، ومشاهدة المحاضرات وحل الاختبارات التفاعلية في دقيقتين.
+        </p>
         <div style="border:1px solid var(--border-gold); border-radius:14px; overflow:hidden; background:#000;">
-          <video id="modalGuideVideo" src="/assets/matn_guide_video.mp4" controls autoplay playsinline style="width:100%; display:block; max-height:70vh;"></video>
+          <video id="modalGuideVideo" src="/assets/matn_guide_video.mp4" controls autoplay playsinline style="width:100%; display:block; max-height:68vh;"></video>
         </div>
       `, '820px');
-    },
-
-    openLoginModal() {
-      this.openModal(`
-        <div style="text-align:center; margin-bottom:18px;">
-          <img src="/assets/logo.png" alt="شعار منصة متن" style="width:60px; height:60px; border-radius:50%; border:2px solid var(--gold-400);" />
-          <h3 style="color:var(--gold-400); margin-top:8px; font-size:1.22rem;">تسجيل الدخول إلى منصة مَتْن</h3>
-          <p style="font-size:0.82rem; color:var(--text-secondary);">أدخل رقم الهاتف وكلمة المرور للمتابعة</p>
-        </div>
-
-        ${this.renderDemoQuickAccessPanel(true)}
-
-        <form data-submit="handleLogin">
-          <div class="form-group">
-            <label for="loginPhone">رقم الهاتف</label>
-            <input type="tel" id="loginPhone" class="form-control" placeholder="010xxxxxxxx" autocomplete="username" required />
-          </div>
-          <div class="form-group">
-            <label for="loginPassword">كلمة المرور</label>
-            <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" autocomplete="current-password" required />
-          </div>
-          <div style="text-align:left; margin-bottom:12px;">
-            <button type="button" class="btn btn-sm btn-outline-gold" data-click="openForgotPasswordModal">${this.icon('key', 14)} <span>نسيت كلمة المرور؟</span></button>
-          </div>
-          <div id="loginErrorBox" style="display:none; margin-bottom:14px;"></div>
-          <button type="submit" id="loginSubmitBtn" class="btn btn-gold" style="width:100%; padding:12px;">${this.icon('lock', 16)} <span>دخول الآن</span></button>
-        </form>
-
-        <div class="card-meta-row" style="margin-top:16px; margin-bottom:0; padding-top:12px; border-top:1px solid var(--border-subtle);">
-          <button type="button" class="btn btn-sm btn-outline-gold" data-click="openRegisterModal">طالب جديد؟ أنشئ حسابك</button>
-          <button type="button" class="btn btn-sm btn-danger" data-click="closeModal">إغلاق</button>
-        </div>
-      `, '560px');
     },
 
     fillDemoLogin(role = 'student') {
@@ -291,7 +641,7 @@ export function registerAuthMethods(proto) {
           method: 'POST',
           body: JSON.stringify({ phone: acc.phone, password: acc.password })
         });
-        this.csrfToken = res.csrf_token || this.getCookie('matn_csrf_token') || '';
+        this.setAuthSession(res.token, res.csrf_token);
         this.user = res.user;
         this.closeModal();
         this.renderNavbar();
@@ -309,29 +659,6 @@ export function registerAuthMethods(proto) {
       } finally {
         if (triggerBtn) triggerBtn.disabled = false;
       }
-    },
-
-    openForgotPasswordModal() {
-      this.openModal(`
-        <div style="text-align:center; margin-bottom:16px;">
-          <div style="color:var(--gold-400); margin-bottom:8px;">${this.icon('key', 34)}</div>
-          <h3 style="color:var(--gold-400);">استعادة كلمة المرور</h3>
-          <p style="font-size:0.82rem; color:var(--text-secondary);">أدخل رقم هاتفك المسجل لإرسال رمز إعادة التعيين عبر الواتساب</p>
-        </div>
-
-        <form data-submit="handleForgotPassword">
-          <div class="form-group">
-            <label for="forgotPhone">رقم الهاتف المسجل</label>
-            <input type="tel" id="forgotPhone" class="form-control" placeholder="010xxxxxxxx" required />
-          </div>
-          <button type="submit" class="btn btn-gold" style="width:100%; padding:12px;">${this.icon('smartphone', 16)} <span>إرسال كود الاستعادة</span></button>
-        </form>
-
-        <div class="card-meta-row" style="margin-top:14px; margin-bottom:0;">
-          <button type="button" class="btn btn-sm btn-outline-gold" data-click="openLoginModal">${this.icon('arrow-right', 14)} <span>العودة لتسجيل الدخول</span></button>
-          <button type="button" class="btn btn-sm btn-danger" data-click="closeModal">إغلاق</button>
-        </div>
-      `);
     },
 
     async handleForgotPassword(e) {
@@ -367,7 +694,7 @@ export function registerAuthMethods(proto) {
             <label for="resetNewPassword">كلمة المرور الجديدة (٨ أحرف على الأقل)</label>
             <input type="password" id="resetNewPassword" class="form-control" minlength="8" required />
           </div>
-          <button type="submit" class="btn btn-gold" style="width:100%; padding:12px;">${this.icon('check-circle', 16)} <span>حفظ كلمة المرور الجديدة</span></button>
+          <button type="submit" class="btn btn-gold btn-block">${this.icon('check-circle', 16)} <span>حفظ كلمة المرور الجديدة</span></button>
         </form>
       `);
     },
@@ -381,8 +708,9 @@ export function registerAuthMethods(proto) {
           method: 'POST',
           body: JSON.stringify({ phone: this.normalizePhoneInput(phone), otp_code, new_password })
         });
+        this.closeModal();
         this.showToast(res.message, 'success');
-        this.openLoginModal();
+        this.openLoginPage();
       } catch (err) {
         this.showToast(err.message, 'danger');
       }
@@ -401,7 +729,7 @@ export function registerAuthMethods(proto) {
           method: 'POST',
           body: JSON.stringify({ phone, password })
         });
-        this.csrfToken = res.csrf_token || this.getCookie('matn_csrf_token') || '';
+        this.setAuthSession(res.token, res.csrf_token);
         this.user = res.user;
         this.closeModal();
         this.renderNavbar();
@@ -427,11 +755,11 @@ export function registerAuthMethods(proto) {
             const waUrl = this.safeHttpsUrl(err.data.whatsapp_unlock_url, this.formatSupportWaUrl());
             errBox.innerHTML = `
               <div style="background:rgba(244,63,94,0.14); border:1px solid var(--danger); padding:12px; border-radius:12px;">
-                <div style="font-weight:800; color:var(--danger-text); margin-bottom:6px; font-size:0.86rem;">${this.esc(err.data.error)}</div>
+                <div style="font-weight:700; color:var(--danger-text); margin-bottom:6px; font-size:0.86rem;">${this.esc(err.data.error)}</div>
                 <div style="font-size:0.78rem; color:var(--text-primary); margin-bottom:10px;">الجهاز المسجل: <b>${this.esc(err.data.registered_device)}</b></div>
                 <div style="display:flex; gap:8px; flex-wrap:wrap;">
                   <button type="button" class="btn btn-outline-gold btn-sm" style="flex:1;" data-click="requestDeviceReset">
-                    ${this.icon('refresh', 14)} <span>إرسال طلب إعادة تعيين الجهاز</span>
+                    ${this.icon('refresh', 14)} <span>طلب إعادة تعيين الجهاز</span>
                   </button>
                   ${waUrl ? `<a href="${this.esc(waUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp btn-sm" style="flex:1;">${this.icon('message-circle', 14)} <span>تواصل مع الدعم</span></a>` : ''}
                 </div>
@@ -464,111 +792,21 @@ export function registerAuthMethods(proto) {
       if (!vf && !ip) return '';
       return `
         <div style="background:rgba(16,185,129,0.08); border:1px solid var(--border-gold); border-radius:10px; padding:10px 12px; margin-bottom:10px; font-size:0.82rem;">
-          <div style="font-weight:800; color:var(--gold-400); margin-bottom:8px; display:flex; align-items:center; gap:6px;">${this.icon('ticket', 16)} <span>أرقام التحويل الرسمية للاشتراك:</span></div>
+          <div style="font-weight:700; color:var(--gold-400); margin-bottom:8px; display:flex; align-items:center; gap:6px;">${this.icon('ticket', 16)} <span>أرقام التحويل الرسمية للاشتراك:</span></div>
           ${vf ? `
             <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px; flex-wrap:wrap;">
-              <span>• <b>فودافون كاش:</b> <span dir="ltr" style="color:var(--text-primary); font-weight:800;">${this.esc(vf)}</span></span>
+              <span>• <b>فودافون كاش:</b> <span dir="ltr" style="color:var(--text-primary); font-weight:700;">${this.esc(vf)}</span></span>
               <button type="button" class="btn btn-outline-gold btn-sm" style="padding:4px 10px; font-size:0.74rem;" data-click="copyText" data-copy="${this.esc(vf)}" data-label="رقم فودافون كاش">${this.icon('copy', 13)} <span>نسخ</span></button>
             </div>
           ` : ''}
           ${ip ? `
             <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
-              <span>• <b>إنستا باي (InstaPay):</b> <span dir="ltr" style="color:var(--text-primary); font-weight:800;">${this.esc(ip)}</span></span>
+              <span>• <b>إنستا باي (InstaPay):</b> <span dir="ltr" style="color:var(--text-primary); font-weight:700;">${this.esc(ip)}</span></span>
               <button type="button" class="btn btn-outline-gold btn-sm" style="padding:4px 10px; font-size:0.74rem;" data-click="copyText" data-copy="${this.esc(ip)}" data-label="حساب إنستا باي">${this.icon('copy', 13)} <span>نسخ</span></button>
             </div>
           ` : ''}
         </div>
       `;
-    },
-
-    openRegisterModal() {
-      const isVoucherMode = this.registrationMode === 'voucher_code';
-      const isOtpMode = this.registrationMode === 'whatsapp_otp';
-      this.openModal(`
-        <div style="text-align:center; margin-bottom:14px;">
-          <img src="/assets/logo.png" alt="شعار منصة متن" style="width:56px; height:56px; border-radius:50%; border:2px solid var(--gold-400);" />
-          <h3 style="color:var(--gold-400); margin-top:6px; font-size:1.18rem;">إنشاء حساب طالب جديد</h3>
-          <p style="font-size:0.8rem; color:var(--text-secondary);">
-            ${isOtpMode ? 'سيتم إرسال كود التفعيل إلى رقم الواتساب الخاص بك' : 'أدخل بياناتك وكود التفعيل الذي استلمته من الإدارة لفتح الحساب فوراً'}
-          </p>
-        </div>
-
-        <form data-submit="handleRegister">
-          <div class="form-group">
-            <label for="regFullName">اسم الطالب رباعياً (٤ أسماء كاملة)</label>
-            <input type="text" id="regFullName" class="form-control" placeholder="مثال: محمد أحمد عبد الله الشافعي" required />
-          </div>
-          <div class="form-row-2">
-            <div class="form-group">
-              <label for="regPhone">رقم هاتف الطالب</label>
-              <input type="tel" id="regPhone" class="form-control" placeholder="010xxxxxxxx" required />
-            </div>
-            <div class="form-group">
-              <label for="regParentPhone">رقم هاتف ولي الأمر</label>
-              <input type="tel" id="regParentPhone" class="form-control" placeholder="010xxxxxxxx" required />
-            </div>
-          </div>
-          <div class="form-row-2">
-            <div class="form-group">
-              <label for="regGrade">الصف الدراسي الأزهري</label>
-              <select id="regGrade" class="form-control" data-change="onRegGradeChange">
-                ${this.renderGradeOptions('grade_3')}
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="regBranch">الشعبة / المسار الدراسي</label>
-              <select id="regBranch" class="form-control">
-                <option value="scientific">القسم العلمي</option>
-                <option value="literary">القسم الأدبي</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-group">
-            <label for="regPassword">كلمة المرور (٨ أحرف أو أرقام على الأقل)</label>
-            <input type="password" id="regPassword" class="form-control" placeholder="••••••••" minlength="8" required />
-          </div>
-          ${!isOtpMode ? `
-            <div class="form-group">
-              <label for="regActivationCode">كود التفعيل ${isVoucherMode ? '*' : '(اختياري)'}</label>
-              <input type="text" id="regActivationCode" class="form-control" placeholder="MATN-DEMO-30D-001" style="text-align:center; font-weight:800; letter-spacing:1px;" ${isVoucherMode ? 'required' : ''} />
-            </div>
-          ` : ''}
-
-          <div style="font-size:0.78rem; color:var(--text-secondary); margin-bottom:12px;">
-            بتسجيلك فإنك توافق على <button type="button" class="btn btn-sm btn-outline-gold" style="padding:2px 8px; font-size:0.74rem;" data-click="openPrivacyPolicyModal">سياسة الخصوصية وشروط الاستخدام</button>.
-          </div>
-
-          <div id="regErrorBox" style="display:none; margin-bottom:12px;"></div>
-
-          <button type="submit" class="btn btn-gold" style="width:100%; padding:12px;">
-            ${this.icon(isOtpMode ? 'smartphone' : 'check-circle', 16)}
-            <span>${isOtpMode ? 'تسجيل وإرسال كود الواتساب' : 'تسجيل وتفعيل الحساب الآن'}</span>
-          </button>
-        </form>
-
-        ${!isOtpMode ? `
-          <div style="margin-top:14px; padding-top:12px; border-top:1px dashed var(--border-gold);">
-            <button type="button" class="btn btn-outline-gold btn-sm" style="width:100%;" data-click="toggleRequestCodePanel">
-              ${this.icon('ticket', 15)} <span>ليس لديك كود تفعيل؟ حوّل واطلبه من الدعم الآن</span>
-            </button>
-            <div id="regRequestCodeBox" style="display:none; margin-top:10px; background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:12px; padding:12px;">
-              ${this.renderPaymentChannelsBox()}
-              <div class="form-group" style="margin-bottom:8px;">
-                <label for="regTransferNumber" style="font-size:0.78rem;">الرقم أو الحساب الذي حوّلت منه المبلغ</label>
-                <input type="text" id="regTransferNumber" class="form-control" placeholder="اكتب رقم الهاتف أو حساب إنستا باي المحوَّل منه..." />
-              </div>
-              <button type="button" class="btn btn-whatsapp btn-sm" style="width:100%; padding:10px;" data-click="requestActivationCodeViaWhatsapp">
-                ${this.icon('message-circle', 15)} <span>تواصل مع الدعم لطلب كود التفعيل</span>
-              </button>
-            </div>
-          </div>
-        ` : ''}
-
-        <div class="card-meta-row" style="margin-top:14px; margin-bottom:0; padding-top:12px; border-top:1px solid var(--border-subtle);">
-          <button type="button" class="btn btn-sm btn-outline-gold" data-click="openLoginModal">لديك حساب؟ سجل دخولك</button>
-          <button type="button" class="btn btn-sm btn-danger" data-click="closeModal">إغلاق</button>
-        </div>
-      `, '590px');
     },
 
     toggleRequestCodePanel() {
@@ -606,7 +844,11 @@ export function registerAuthMethods(proto) {
         this.showToast('رقم واتساب الدعم غير مهيأ حالياً.', 'danger');
         return;
       }
-      window.open(waUrl, '_blank', 'noopener,noreferrer');
+      const a = document.createElement('a');
+      a.href = waUrl;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.click();
     },
 
     async handleRegister(e) {
@@ -628,7 +870,7 @@ export function registerAuthMethods(proto) {
         });
 
         if (res.auto_verified === true && res.user) {
-          this.csrfToken = res.csrf_token || this.getCookie('matn_csrf_token') || '';
+          this.setAuthSession(res.token, res.csrf_token);
           this.user = res.user;
           this.closeModal();
           this.renderNavbar();
@@ -672,7 +914,7 @@ export function registerAuthMethods(proto) {
                 required
               />
             </div>
-            <button type="submit" class="btn btn-gold" style="width:100%; padding:12px;">${this.icon('check-circle', 16)} <span>تأكيد الكود وتفعيل الحساب</span></button>
+            <button type="submit" class="btn btn-gold btn-block">${this.icon('check-circle', 16)} <span>تأكيد الكود وتفعيل الحساب</span></button>
           </form>
 
           <div class="card-meta-row" style="margin-top:16px; margin-bottom:0;">
@@ -705,7 +947,7 @@ export function registerAuthMethods(proto) {
           method: 'POST',
           body: JSON.stringify({ phone: this.normalizeDigits(phone).trim(), otp_code })
         });
-        this.csrfToken = res.csrf_token || this.getCookie('matn_csrf_token') || '';
+        this.setAuthSession(res.token, res.csrf_token);
         this.user = res.user;
         this.closeModal();
         this.renderNavbar();
@@ -734,9 +976,9 @@ export function registerAuthMethods(proto) {
         <form data-submit="handleRedeemVoucher">
           <div class="form-group">
             <label for="modalVoucherCodeInput">أدخل كود كارت الشحن</label>
-            <input type="text" name="voucher_code" id="modalVoucherCodeInput" class="form-control" placeholder="MATN-DEMO-30D-001" style="text-align:center; font-size:1.15rem; font-weight:800; letter-spacing:1.5px;" required />
+            <input type="text" name="voucher_code" id="modalVoucherCodeInput" class="form-control" placeholder="MATN-DEMO-30D-001" style="text-align:center; font-size:1.15rem; font-weight:700; letter-spacing:1.5px;" required />
           </div>
-          <button type="submit" class="btn btn-gold" style="width:100%; padding:12px;">${this.icon('zap', 16)} <span>تفعيل اشتراك ٣٠ يوماً الآن</span></button>
+          <button type="submit" class="btn btn-gold btn-block">${this.icon('zap', 16)} <span>تفعيل اشتراك ٣٠ يوماً الآن</span></button>
         </form>
 
         <div style="margin-top:12px;">

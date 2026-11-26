@@ -87,23 +87,35 @@ function parseCookies(req) {
   return list;
 }
 
-function buildAuthCookies(token, csrfToken, deviceId) {
-  const secureFlag = IS_PROD ? '; Secure' : '';
+function isCrossSiteHttpsRequest(req) {
+  if (!req || !req.headers) return false;
+  const proto = String(req.headers['x-forwarded-proto'] || '').toLowerCase();
+  const isHttps = proto.includes('https') || Boolean(req.socket && req.socket.encrypted);
+  if (!isHttps) return false;
+  const secDest = String(req.headers['sec-fetch-dest'] || '').toLowerCase();
+  const secSite = String(req.headers['sec-fetch-site'] || '').toLowerCase();
+  return secDest === 'iframe' || secSite === 'cross-site' || Boolean(process.env.APPLET_ID);
+}
+
+function buildAuthCookies(token, csrfToken, deviceId, req = null) {
+  const crossSiteHttps = isCrossSiteHttpsRequest(req);
+  const sameSiteAttr = crossSiteHttps ? 'SameSite=None; Secure; Partitioned' : `SameSite=Lax${IS_PROD ? '; Secure' : ''}`;
   const cookies = [
-    `matn_access_token=${encodeURIComponent(token)}; HttpOnly; Path=/; SameSite=Lax; Max-Age=${JWT_EXPIRES_IN_SECONDS}${secureFlag}`,
-    `matn_csrf_token=${encodeURIComponent(csrfToken)}; Path=/; SameSite=Lax; Max-Age=${JWT_EXPIRES_IN_SECONDS}${secureFlag}`
+    `matn_access_token=${encodeURIComponent(token)}; HttpOnly; Path=/; ${sameSiteAttr}; Max-Age=${JWT_EXPIRES_IN_SECONDS}`,
+    `matn_csrf_token=${encodeURIComponent(csrfToken)}; Path=/; ${sameSiteAttr}; Max-Age=${JWT_EXPIRES_IN_SECONDS}`
   ];
   if (deviceId) {
-    cookies.push(`matn_device_binding=${encodeURIComponent(deviceId)}; HttpOnly; Path=/; SameSite=Lax; Max-Age=31536000${secureFlag}`);
+    cookies.push(`matn_device_binding=${encodeURIComponent(deviceId)}; HttpOnly; Path=/; ${sameSiteAttr}; Max-Age=31536000`);
   }
   return cookies;
 }
 
-function clearAuthCookies() {
-  const secureFlag = IS_PROD ? '; Secure' : '';
+function clearAuthCookies(req = null) {
+  const crossSiteHttps = isCrossSiteHttpsRequest(req);
+  const sameSiteAttr = crossSiteHttps ? 'SameSite=None; Secure; Partitioned' : `SameSite=Lax${IS_PROD ? '; Secure' : ''}`;
   return [
-    `matn_access_token=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0${secureFlag}`,
-    `matn_csrf_token=; Path=/; SameSite=Lax; Max-Age=0${secureFlag}`
+    `matn_access_token=; HttpOnly; Path=/; ${sameSiteAttr}; Max-Age=0`,
+    `matn_csrf_token=; Path=/; ${sameSiteAttr}; Max-Age=0`
   ];
 }
 

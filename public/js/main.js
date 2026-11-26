@@ -23,6 +23,11 @@ import { registerAdminMethods } from './admin-views.js';
 class MatnPlatformApp {
   constructor() {
     this.csrfToken = this.getCookie('matn_csrf_token') || '';
+    try {
+      this.authToken = sessionStorage.getItem('matn_auth_token') || '';
+    } catch {
+      this.authToken = '';
+    }
     this.user = null;
     this.deviceId = this.getOrCreateDeviceId();
     this.deviceName = this.detectDeviceName();
@@ -33,7 +38,7 @@ class MatnPlatformApp {
     }
     document.documentElement.dataset.theme = this.theme;
     this.publicSettings = {
-      teacher_name: 'فضيلة الشيخ محمد عبد الله',
+      teacher_name: 'فضيلة الشيخ محمد عبد\u00A0الله',
       platform_name: 'منصة مَتْن (MATN) للمواد الشرعية',
       support_whatsapp: '',
       vodafone_cash_number: '',
@@ -44,6 +49,8 @@ class MatnPlatformApp {
     this.publicStats = { studentsCount: 0, lessonsCount: 0, examsCount: 0 };
     this.demoAccounts = null;
     this.registrationMode = 'voucher_code';
+    this.landingCourseStage = 'all';
+    this.mobileDrawerOpen = false;
     this.currentView = 'landing';
     this.studentTab = 'curriculum';
     this.selectedSubject = 'fiqh';
@@ -105,9 +112,71 @@ class MatnPlatformApp {
     setTimeout(() => { this._suppressHashSync = false; }, 0);
   }
 
+  setAuthSession(token, csrfToken) {
+    if (token) {
+      this.authToken = String(token);
+      try { sessionStorage.setItem('matn_auth_token', this.authToken); } catch {}
+    }
+    if (csrfToken) {
+      this.csrfToken = String(csrfToken);
+    }
+  }
+
+  clearAuthSession() {
+    this.authToken = '';
+    this.csrfToken = '';
+    try { sessionStorage.removeItem('matn_auth_token'); } catch {}
+  }
+
+  toggleMobileSidebar() {
+    this.mobileDrawerOpen = !this.mobileDrawerOpen;
+    this.syncMobileDrawerState();
+  }
+
+  closeMobileSidebar() {
+    if (!this.mobileDrawerOpen) return;
+    this.mobileDrawerOpen = false;
+    this.syncMobileDrawerState();
+  }
+
+  syncMobileDrawerState() {
+    const sidebar = document.querySelector('.app-sidebar');
+    const backdrop = document.getElementById('sidebarDrawerBackdrop');
+    if (sidebar) sidebar.classList.toggle('drawer-open', this.mobileDrawerOpen);
+    if (backdrop) backdrop.classList.toggle('open', this.mobileDrawerOpen);
+    document.body.classList.toggle('drawer-open', this.mobileDrawerOpen);
+  }
+
+  filterLandingCourses(stage = 'all') {
+    this.landingCourseStage = ['all', 'sec', 'prep'].includes(stage) ? stage : 'all';
+    if (!this.user && this.currentView === 'landing') {
+      this.renderLanding();
+      const catalog = document.getElementById('coursesCatalog');
+      if (catalog) catalog.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  scrollToCourses() {
+    if (!this.user && this.currentView !== 'landing') {
+      this.setHashRoute('/');
+      this.renderLanding();
+    }
+    const catalog = document.getElementById('coursesCatalog');
+    if (catalog) catalog.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   applyHashRoute() {
-    if (this._suppressHashSync || !this.user) return;
+    if (this._suppressHashSync) return;
     const raw = (window.location.hash || '').replace(/^#/, '');
+
+    if (!this.user) {
+      if (raw === '/login') { this.renderLoginPage(false); return; }
+      if (raw === '/register') { this.renderRegisterPage(false); return; }
+      if (raw === '/forgot-password') { this.renderForgotPasswordPage(false); return; }
+      if (raw === '/' || raw === '') { this.renderLanding(); return; }
+      return;
+    }
+
     if (!raw) return;
 
     if (this.user.role === 'admin') {
@@ -177,6 +246,7 @@ class MatnPlatformApp {
       if (e.key === 'Escape') {
         const modal = document.getElementById('globalModal');
         if (modal && modal.classList.contains('open')) this.closeModal();
+        if (this.mobileDrawerOpen) this.closeMobileSidebar();
         return;
       }
 
@@ -215,24 +285,28 @@ class MatnPlatformApp {
       switch (action) {
         case 'navigateHome': return this.navigateHome();
         case 'toggleTheme': return this.toggleTheme();
+        case 'toggleMobileSidebar': return this.toggleMobileSidebar();
+        case 'closeMobileSidebar': return this.closeMobileSidebar();
+        case 'filterLandingCourses': return this.filterLandingCourses(arg || 'all');
+        case 'scrollToCourses': return this.scrollToCourses();
         case 'logout': return this.logout();
         case 'closeModal': return this.closeModal();
-        case 'openLoginModal': return this.openLoginModal();
-        case 'openRegisterModal': return this.openRegisterModal();
+        case 'openLoginModal': return this.openLoginPage();
+        case 'openRegisterModal': return this.openRegisterPage();
         case 'demoLogin': return this.demoLogin(arg || 'student', target);
         case 'fillDemoLogin': return this.fillDemoLogin(arg || 'student');
         case 'toggleRequestCodePanel': return this.toggleRequestCodePanel();
         case 'requestActivationCodeViaWhatsapp': return this.requestActivationCodeViaWhatsapp();
-        case 'openForgotPasswordModal': return this.openForgotPasswordModal();
+        case 'openForgotPasswordModal': return this.openForgotPasswordPage();
         case 'openPrivacyPolicyModal': return this.openPrivacyPolicyModal();
         case 'openPlatformGuideVideoModal': return this.openPlatformGuideVideoModal();
         case 'openRedeemVoucherModal': return this.openRedeemVoucherModal();
         case 'requestDeviceReset': return this.requestDeviceReset();
         case 'resendOtp': return this.resendOtp(arg || '');
-        case 'switchStudentTab': return this.switchStudentTab(arg);
-        case 'selectSubject': return this.selectSubject(arg);
+        case 'switchStudentTab': { this.closeMobileSidebar(); return this.switchStudentTab(arg); }
+        case 'selectSubject': { this.closeMobileSidebar(); return this.selectSubject(arg); }
         case 'resetLessonFilters': return this.resetLessonFilters();
-        case 'openNotificationsModal': return this.openNotificationsModal();
+        case 'openNotificationsModal': { this.closeMobileSidebar(); return this.openNotificationsModal(); }
         case 'markAllNotificationsRead': return this.markAllNotificationsRead();
         case 'joinLiveSession': return this.joinLiveSession(id);
         case 'openLessonWorkspace': return this.openLessonWorkspace(id, arg || 'video');
@@ -262,7 +336,7 @@ class MatnPlatformApp {
         case 'selectMcqOption': return this.selectMcqOptionByIndex(id, Number(target.dataset.oindex));
         case 'submitAssessment': return this.submitAssessment();
         case 'viewSubmissionReview': return this.viewSubmissionReview(id);
-        case 'switchAdminTab': return this.switchAdminTab(arg);
+        case 'switchAdminTab': { this.closeMobileSidebar(); return this.switchAdminTab(arg); }
         case 'loadAdminDashboard': return this.loadAdminDashboard(true);
         case 'openEditLessonModal': return this.openEditLessonModal(id);
         case 'toggleLessonPublish': return this.toggleLessonPublish(id, Number(target.dataset.next));
@@ -600,6 +674,7 @@ class MatnPlatformApp {
       'Content-Type': 'application/json',
       'X-Device-Id': this.deviceId,
       'X-Device-Name': encodeURIComponent(this.deviceName),
+      ...(this.authToken ? { Authorization: `Bearer ${this.authToken}` } : {}),
       ...(csrf ? { 'X-CSRF-Token': csrf } : {}),
       ...(options.headers || {})
     };
@@ -709,7 +784,7 @@ class MatnPlatformApp {
       if (pub && pub.registration_mode) this.registrationMode = pub.registration_mode;
     } catch {}
 
-    if (this.csrfToken || this.getCookie('matn_csrf_token')) {
+    if (this.authToken || this.csrfToken || this.getCookie('matn_csrf_token')) {
       try {
         const res = await this.api('/api/auth/me');
         this.user = res.user;
@@ -720,14 +795,20 @@ class MatnPlatformApp {
         return;
       } catch {
         this.user = null;
+        this.clearAuthSession();
       }
     }
 
     this.renderNavbar();
-    this.renderLanding();
+    const initialHash = (window.location.hash || '').replace(/^#/, '');
+    if (initialHash === '/login') this.renderLoginPage(false);
+    else if (initialHash === '/register') this.renderRegisterPage(false);
+    else if (initialHash === '/forgot-password') this.renderForgotPasswordPage(false);
+    else this.renderLanding();
   }
 
   navigateHome() {
+    this.closeMobileSidebar();
     this.stopActiveMediaLoops();
     if (this.examTimerInterval) clearInterval(this.examTimerInterval);
     this.activeAssessmentSession = null;
@@ -750,17 +831,19 @@ class MatnPlatformApp {
   }
 
   async logout() {
+    this.closeMobileSidebar();
     this.stopActiveMediaLoops();
     if (this.examTimerInterval) clearInterval(this.examTimerInterval);
     this.activeAssessmentSession = null;
     this._isSubmittingAssessment = false;
     try { await this.api('/api/auth/logout', { method: 'POST' }); } catch {}
-    this.csrfToken = '';
+    this.clearAuthSession();
     this.user = null;
     this.activeLessonId = null;
     this.studentNotifications = [];
     this.notificationUnreadCount = 0;
     this.studentLiveSessions = [];
+    this.setHashRoute('/');
     this.renderNavbar();
     this.renderLanding();
     this.showToast('تم تسجيل الخروج وإبطال الجلسة بنجاح.');

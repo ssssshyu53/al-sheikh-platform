@@ -210,58 +210,73 @@ export function registerStudentMethods(proto) {
       const mistakesCount = Number(this.studentMistakesData?.total_count || 0);
       const unread = Number(this.notificationUnreadCount || 0);
 
+      this.mobileDrawerOpen = false;
+      document.body.classList.remove('drawer-open');
+
       root.innerHTML = `
         <div class="app-shell fade-in">
-          <aside class="app-sidebar">
-            <div>
-              <div class="sidebar-user-card">
-                <img src="/assets/logo.png" style="width:56px; height:56px; border-radius:50%; border:2px solid var(--gold-400); margin-bottom:8px;" />
-                <div style="font-weight:800; color:var(--gold-400); font-size:0.95rem;">${this.esc(u.full_name)}</div>
-                <div style="font-size:0.76rem; color:var(--text-secondary); margin-top:2px;">${this.esc(GRADES_META[u.grade] || '')} • ${this.esc(BRANCHES_META[u.branch] || '')}</div>
-                <div style="margin-top:8px;">
-                  <span class="badge ${u.subscription_active ? 'badge-success' : 'badge-danger'}">
-                    ${this.icon(u.subscription_active ? 'check-circle' : 'alert-triangle', 13)}
-                    <span>${u.subscription_active ? `اشتراك سارٍ (${Number(u.days_remaining)} يوم)` : 'غير مشترك'}</span>
+          <div id="sidebarDrawerBackdrop" class="sidebar-drawer-backdrop" data-click="closeMobileSidebar" aria-hidden="true"></div>
+          <aside class="app-sidebar" aria-label="قائمة الطالب">
+            <div class="sidebar-scroll-body">
+              <div class="sidebar-profile">
+                <img src="/assets/logo.png" alt="شعار منصة متن" class="sidebar-profile-avatar" />
+                <div class="sidebar-profile-meta">
+                  <strong class="sidebar-profile-name">${this.esc(u.full_name)}</strong>
+                  <span class="sidebar-profile-sub">${this.esc(GRADES_META[u.grade] || '')} · ${this.esc(BRANCHES_META[u.branch] || '')}</span>
+                  <span class="sidebar-status-line ${u.subscription_active ? 'is-active' : 'is-expired'}">
+                    ${this.icon(u.subscription_active ? 'check-circle' : 'alert-triangle', 12)}
+                    <span>${u.subscription_active ? `اشتراك سارٍ · ${Number(u.days_remaining)} يوم` : 'غير مشترك'}</span>
                   </span>
                 </div>
+                <button type="button" class="sidebar-drawer-close" data-click="closeMobileSidebar" aria-label="إغلاق القائمة">
+                  ${this.icon('x', 16)}
+                </button>
               </div>
 
-              <nav class="sidebar-nav" style="margin-top:18px;">
-                <button class="sidebar-link ${this.studentTab === 'curriculum' && !this.activeLessonId ? 'active' : ''}" data-click="switchStudentTab" data-arg="curriculum">
-                  <span class="nav-icon">${this.icon('book', 18)}</span>
-                  <span>المنهج والمحاضرات</span>
-                </button>
-                <button class="sidebar-link ${this.studentTab === 'mistakes' && !this.activeLessonId ? 'active' : ''}" data-click="switchStudentTab" data-arg="mistakes">
-                  <span class="nav-icon">${this.icon('target', 18)}</span>
-                  <span>بنك الأخطاء (${mistakesCount})</span>
-                </button>
-                <button class="sidebar-link ${this.studentTab === 'live' && !this.activeLessonId ? 'active' : ''}" data-click="switchStudentTab" data-arg="live">
-                  <span class="nav-icon">${this.icon('radio', 18)}</span>
-                  <span>الحصص المباشرة (${liveCount})</span>
-                </button>
-                <button class="sidebar-link ${this.studentTab === 'analytics' && !this.activeLessonId ? 'active' : ''}" data-click="switchStudentTab" data-arg="analytics">
-                  <span class="nav-icon">${this.icon('bar-chart', 18)}</span>
-                  <span>درجاتي وتحليل المستوى</span>
-                </button>
-                <button class="sidebar-link ${this.studentTab === 'subscription' && !this.activeLessonId ? 'active' : ''}" data-click="switchStudentTab" data-arg="subscription">
-                  <span class="nav-icon">${this.icon('ticket', 18)}</span>
-                  <span>الاشتراك وشحن الكود</span>
-                </button>
-                <button class="sidebar-link" data-click="openNotificationsModal">
-                  <span class="nav-icon">${this.icon('bell', 18)}</span>
-                  <span>الإشعارات ${unread > 0 ? `(${unread})` : ''}</span>
-                </button>
-              </nav>
+              <div class="sidebar-group">
+                <div class="sidebar-group-label">القائمة الرئيسية</div>
+                <nav class="sidebar-nav">
+                  <button type="button" class="sidebar-link ${this.studentTab === 'curriculum' && !this.activeLessonId ? 'active' : ''}" data-click="switchStudentTab" data-arg="curriculum">
+                    <span class="nav-icon">${this.icon('book', 17)}</span>
+                    <span class="sidebar-link-label">المنهج والمحاضرات</span>
+                  </button>
+                  <button type="button" class="sidebar-link ${this.studentTab === 'mistakes' && !this.activeLessonId ? 'active' : ''}" data-click="switchStudentTab" data-arg="mistakes">
+                    <span class="nav-icon">${this.icon('target', 17)}</span>
+                    <span class="sidebar-link-label">بنك الأخطاء</span>
+                    ${mistakesCount > 0 ? `<span class="sidebar-count">${mistakesCount}</span>` : ''}
+                  </button>
+                  <button type="button" class="sidebar-link ${this.studentTab === 'live' && !this.activeLessonId ? 'active' : ''}" data-click="switchStudentTab" data-arg="live">
+                    <span class="nav-icon">${this.icon('radio', 17)}</span>
+                    <span class="sidebar-link-label">الحصص المباشرة</span>
+                    ${liveCount > 0 ? `<span class="sidebar-count is-accent">${liveCount}</span>` : ''}
+                  </button>
+                  <button type="button" class="sidebar-link ${this.studentTab === 'analytics' && !this.activeLessonId ? 'active' : ''}" data-click="switchStudentTab" data-arg="analytics">
+                    <span class="nav-icon">${this.icon('bar-chart', 17)}</span>
+                    <span class="sidebar-link-label">درجاتي والمستوى</span>
+                  </button>
+                  <button type="button" class="sidebar-link ${this.studentTab === 'subscription' && !this.activeLessonId ? 'active' : ''}" data-click="switchStudentTab" data-arg="subscription">
+                    <span class="nav-icon">${this.icon('ticket', 17)}</span>
+                    <span class="sidebar-link-label">الاشتراك وشحن الكود</span>
+                  </button>
+                  <button type="button" class="sidebar-link" data-click="openNotificationsModal">
+                    <span class="nav-icon">${this.icon('bell', 17)}</span>
+                    <span class="sidebar-link-label">الإشعارات</span>
+                    ${unread > 0 ? `<span class="sidebar-count is-danger">${unread}</span>` : ''}
+                  </button>
+                </nav>
+              </div>
 
-              <div style="margin-top:20px; padding-top:14px; border-top:1px solid var(--border-subtle);">
-                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; margin-bottom:8px; padding-right:8px;">المواد الشرعية المقررة:</div>
+              <div class="sidebar-group">
+                <div class="sidebar-group-label">المواد الشرعية المقررة</div>
                 <div class="sidebar-nav">
                   ${this.getSubjectsForGrade(u.grade).map((key) => {
                     const meta = SUBJECTS_META[key];
+                    const subjCount = (this.studentDashboardData?.lessons || []).filter((l) => l.subject === key).length;
                     return `
-                      <button class="sidebar-link ${this.selectedSubject === key && this.studentTab === 'curriculum' && !this.activeLessonId ? 'active' : ''}" data-click="selectSubject" data-arg="${key}">
-                        <span class="nav-icon">${this.icon(meta.iconName || 'book', 17)}</span>
-                        <span>${this.esc(this.getSubjectName(key, u.grade))}</span>
+                      <button type="button" class="sidebar-link ${this.selectedSubject === key && this.studentTab === 'curriculum' && !this.activeLessonId ? 'is-sub-active' : ''}" data-click="selectSubject" data-arg="${key}">
+                        <span class="nav-icon">${this.icon(meta.iconName || 'book', 16)}</span>
+                        <span class="sidebar-link-label">${this.esc(this.getSubjectName(key, u.grade))}</span>
+                        ${subjCount > 0 ? `<span class="sidebar-count">${subjCount}</span>` : ''}
                       </button>
                     `;
                   }).join('')}
@@ -269,9 +284,9 @@ export function registerStudentMethods(proto) {
               </div>
             </div>
 
-            <div style="display:grid; gap:8px; margin-top:auto;">
+            <div class="sidebar-footer">
               ${supportWaUrl ? `<a href="${this.esc(supportWaUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp btn-sm btn-block">${this.icon('message-circle', 15)} <span>تواصل مع الدعم</span></a>` : ''}
-              <div style="font-size:0.75rem; color:var(--text-muted); text-align:center; display:flex; align-items:center; justify-content:center; gap:5px;">
+              <div class="sidebar-security-note">
                 ${this.icon('lock', 13)} <span>الحساب مربوط بجهاز واحد</span>
               </div>
             </div>
@@ -1447,6 +1462,7 @@ export function registerStudentMethods(proto) {
         const pdfRes = await fetch(`/api/stream/pdf-file/${Number(lessonId)}`, {
           credentials: 'same-origin',
           headers: {
+            ...(this.authToken ? { Authorization: `Bearer ${this.authToken}` } : {}),
             'X-Device-Id': this.deviceId,
             'X-Stream-Ticket': streamTicket || ''
           }
