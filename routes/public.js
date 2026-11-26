@@ -1,5 +1,6 @@
 const { db } = require('../database');
 const { HAS_WHATSAPP_GATEWAY, ALLOW_UNVERIFIED_REGISTRATION } = require('../lib/constants');
+const { getPublicDemoAccountsPayload } = require('../lib/demo-seed');
 const { sendJson } = require('../middleware/security');
 
 async function handlePublicRoutes(req, res, ctx) {
@@ -48,7 +49,13 @@ async function handlePublicRoutes(req, res, ctx) {
       lessonsCount: lessonsRow?.c || 0,
       examsCount: examsRow?.c || 0
     };
-    sendJson(req, res, 200, { settings, stats, registration_mode: registrationMode });
+    const demoAccounts = getPublicDemoAccountsPayload();
+    sendJson(req, res, 200, {
+      settings,
+      stats,
+      registration_mode: registrationMode,
+      ...(demoAccounts ? { demo_accounts: demoAccounts } : {})
+    });
     return true;
   }
 

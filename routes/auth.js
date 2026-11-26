@@ -20,6 +20,7 @@ const {
   isValidDeviceId,
   sanitizeUser
 } = require('../lib/constants');
+const { DEMO_STUDENT, shouldSeedDemoAccounts } = require('../lib/demo-seed');
 const {
   checkRateLimit,
   parseCookies,
@@ -307,7 +308,7 @@ async function handleAuthRoutes(req, res, ctx) {
       const csrfToken = crypto.randomBytes(24).toString('hex');
 
       sendJson(req, res, 201, {
-        message: `🎉 تم إنشاء حسابك وتفعيل اشتراكك لمدة ${voucher.duration_days} يوماً بنجاح!`,
+        message: `تم إنشاء حسابك وتفعيل اشتراكك لمدة ${voucher.duration_days} يوماً بنجاح.`,
         auto_verified: true,
         expires_at: newExpiresAt,
         token,
@@ -519,7 +520,7 @@ async function handleAuthRoutes(req, res, ctx) {
     if (user.device_id && deviceId !== user.device_id) {
       sendJson(req, res, 403, {
         error_code: 'DEVICE_LOCKED',
-        error: '⛔ يجب تأكيد الحساب من نفس الجهاز الذي تم التسجيل به.'
+        error: 'يجب تأكيد الحساب من نفس الجهاز الذي تم التسجيل به.'
       });
       return true;
     }
@@ -858,14 +859,17 @@ async function handleAuthRoutes(req, res, ctx) {
     }
 
     const now = new Date().toISOString();
-    if (!user.device_id) {
+    const isDevDemoStudent = shouldSeedDemoAccounts() && user.phone === DEMO_STUDENT.phone;
+    if (!user.device_id || (isDevDemoStudent && user.device_id !== deviceId)) {
       await db.run(
         `UPDATE users SET device_id = ?, device_name = ?, device_locked_at = ?, device_reset_requested = 0 WHERE id = ?`,
         [deviceId, deviceName, now, user.id]
       );
       user.device_id = deviceId;
       user.device_name = deviceName;
-      await recordSharedDeviceIfAny(user.id, user.full_name, user.phone, deviceId);
+      if (!isDevDemoStudent) {
+        await recordSharedDeviceIfAny(user.id, user.full_name, user.phone, deviceId);
+      }
     } else if (user.device_id !== deviceId) {
       await db.run(`UPDATE users SET blocked_login_attempts = blocked_login_attempts + 1 WHERE id = ?`, [user.id]);
       await db.run(
@@ -885,7 +889,7 @@ async function handleAuthRoutes(req, res, ctx) {
       const waIntl = waDigits.startsWith('0') ? `2${waDigits}` : waDigits;
       sendJson(req, res, 403, {
         error_code: 'DEVICE_LOCKED',
-        error: '⛔ حساب الطالب مربوط بجهاز آخر. يمكنك إرسال طلب إعادة تعيين الجهاز للإدارة.',
+        error: 'حساب الطالب مربوط بجهاز آخر. يمكنك إرسال طلب إعادة تعيين الجهاز للإدارة.',
         registered_device: user.device_name || 'الجهاز الأساسي المسجل',
         support_whatsapp: supportWhatsapp,
         whatsapp_unlock_url: waIntl
@@ -1080,7 +1084,7 @@ async function handleAuthRoutes(req, res, ctx) {
 
     writeAuditLog(req, user, 'VOUCHER_REDEEM', 'voucher', redeemRes.voucher.id, { duration_days: redeemRes.voucher.duration_days });
     sendJson(req, res, 200, {
-      message: `🎉 تم تفعيل الكود بنجاح! اشتراكك متاح لمدة ${redeemRes.voucher.duration_days} يوماً حتى ${new Date(redeemRes.newExpiresAt).toLocaleDateString('ar-EG')}.`,
+      message: `تم تفعيل الكود بنجاح! اشتراكك متاح لمدة ${redeemRes.voucher.duration_days} يوماً حتى ${new Date(redeemRes.newExpiresAt).toLocaleDateString('ar-EG')}.`,
       user: sanitizeUser(redeemRes.updatedUser),
       expires_at: redeemRes.newExpiresAt
     });

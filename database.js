@@ -2,6 +2,7 @@ const crypto = require('node:crypto');
 const { promisify } = require('node:util');
 const { createDatabaseConnection } = require('./db/adapter');
 const { runMigrations } = require('./db/migrations');
+const { seedDemoData } = require('./lib/demo-seed');
 
 const scryptAsync = promisify(crypto.scrypt);
 let activeDb = createDatabaseConnection();
@@ -97,6 +98,7 @@ function initDatabase() {
         }
       }
       await bootstrapInitialAdmin();
+      await seedDemoData(db, hashPasswordAsync);
       return db;
     })().catch((err) => {
       initPromise = null;

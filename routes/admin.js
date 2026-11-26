@@ -972,7 +972,7 @@ async function handleAdminRoutes(req, res, ctx) {
 
     if (isPublished) {
       await createNotification(db, {
-        title: `📖 محاضرة جديدة: ${title}`,
+        title: `محاضرة جديدة: ${title}`,
         body: `تمت إضافة محاضرة جديدة في مادتك (${unitTitle}). افتحها الآن وشاهد الشرح.`,
         notifType: 'new_lesson',
         targetGrade: grade,
@@ -1077,7 +1077,7 @@ async function handleAdminRoutes(req, res, ctx) {
 
     if (!existingLesson.is_published && isPublished === 1) {
       await createNotification(db, {
-        title: `📖 محاضرة جديدة: ${title}`,
+        title: `محاضرة جديدة: ${title}`,
         body: `تم نشر محاضرة جديدة في مادتك (${unitTitle}). افتحها الآن وشاهد الشرح.`,
         notifType: 'new_lesson',
         targetGrade: grade,
@@ -1180,7 +1180,7 @@ async function handleAdminRoutes(req, res, ctx) {
     // Auto in-app notifications for new exam or retake_exam
     if (assessmentType === 'exam') {
       await createNotification(db, {
-        title: `📝 امتحان جديد: ${title}`,
+        title: `امتحان جديد: ${title}`,
         body: `تم فتح امتحان جديد لمحاضرة «${lessonRow.title}» لمدة ${timeLimit} دقيقة.`,
         notifType: 'new_exam',
         targetGrade: lessonRow.grade,
@@ -1190,7 +1190,7 @@ async function handleAdminRoutes(req, res, ctx) {
     } else if (assessmentType === 'retake_exam' && targetStudentIds.length > 0) {
       for (const sid of targetStudentIds) {
         await createNotification(db, {
-          title: `🔁 تم فتح امتحان الإعادة: ${title}`,
+          title: `تم فتح امتحان الإعادة: ${title}`,
           body: `يمكنك الآن دخول امتحان الإعادة لمحاضرة «${lessonRow.title}» لاستكمال فتح الحصص القادمة.`,
           notifType: 'retake_exam',
           targetUserId: sid,
@@ -1557,7 +1557,7 @@ async function handleAdminRoutes(req, res, ctx) {
     } else {
       msg = [
         `وعليكم السلام ورحمة الله وبركاته يا ${recipientName}`,
-        'تم تأكيد استلام التحويل بنجاح ✅',
+        'تم تأكيد استلام التحويل بنجاح.',
         'اتفضل كود التفعيل الخاص باشتراكك في منصة مَتْن:',
         updatedVoucher.code,
         'بالتوفيق إن شاء الله!'
@@ -1630,7 +1630,7 @@ async function handleAdminRoutes(req, res, ctx) {
     );
     if (isPublished === 1) {
       await createNotification(db, {
-        title: '💬 تمت الإجابة على سؤالك',
+        title: 'تمت الإجابة على سؤالك',
         body: `رد فضيلة الأستاذ على سؤالك: ${answer.slice(0, 180)}`,
         notifType: 'qa_answer',
         targetUserId: qRow.user_id,

@@ -126,8 +126,8 @@ export function registerAdminMethods(proto) {
 
           <section class="app-main">
             ${d.admin_phone_matches_support ? `
-              <div class="section-card no-print" style="border-color:#f59e0b; background:rgba(120,53,15,0.28); padding:12px 16px; margin-bottom:16px;">
-                <div style="font-weight:800; color:#fbbf24; font-size:0.88rem; display:flex; align-items:center; gap:8px;">
+              <div class="section-card no-print" style="border-color:var(--warning); background:rgba(196,154,58,0.12); padding:12px 16px; margin-bottom:16px;">
+                <div style="font-weight:700; color:var(--warning-text); font-size:0.88rem; display:flex; align-items:center; gap:8px;">
                   ${this.icon('alert-triangle', 17)}
                   <span>تحذير أمني: رقم واتساب الدعم الظاهر للطلاب مطابق لرقم دخول الأدمن (${this.esc(this.user.phone)})! يُنصح بتغييره من تبويب «إعدادات المنصة».</span>
                 </div>
@@ -278,13 +278,13 @@ export function registerAdminMethods(proto) {
               </div>
               <div class="stat-box">
                 <span class="stat-label">إيراد هذا الشهر (الأكواد المفعّلة)</span>
-                <span class="stat-value" style="color:#6ee7b7;">${Number(rev.month_revenue_egp || 0).toLocaleString('ar-EG')} ج.م</span>
+                <span class="stat-value" style="color:var(--success-text);">${Number(rev.month_revenue_egp || 0).toLocaleString('ar-EG')} ج.م</span>
                 <span style="font-size:0.74rem; color:var(--text-secondary);">الإجمالي: ${Number(rev.total_revenue_egp || 0).toLocaleString('ar-EG')} ج.م (${Number(rev.total_used_vouchers || 0)} كود)</span>
               </div>
               <div class="stat-box">
                 <span class="stat-label">أكواد متاحة / اشتراكات تنتهي قريباً</span>
                 <span class="stat-value">${unusedVouchers} متاح</span>
-                <span style="font-size:0.74rem; color:#fbbf24;">ينتهي خلال ٣ أيام: ${Number(d.expiring_soon_count || 0)} طالب</span>
+                <span style="font-size:0.74rem; color:var(--warning-text);">ينتهي خلال ٣ أيام: ${Number(d.expiring_soon_count || 0)} طالب</span>
               </div>
               <div class="stat-box">
                 <span class="stat-label">الراسبون / أسئلة بانتظار الرد</span>
@@ -310,7 +310,7 @@ export function registerAdminMethods(proto) {
 
               ${filteredLessons.length === 0 ? `
                 <div style="text-align:center; padding:40px 20px;">
-                  <div style="font-size:2.6rem; margin-bottom:10px;">🎬</div>
+                  <div style="color:var(--gold-400); margin-bottom:10px;">${this.icon('film', 38)}</div>
                   <h4 style="color:var(--gold-400); margin-bottom:8px;">لا توجد محاضرات في هذا القسم حالياً</h4>
                   <button class="btn btn-gold" data-click="switchAdminTab" data-arg="add_lesson">${this.icon("plus", 15)} ارفع محاضرة الآن</button>
                 </div>
@@ -433,7 +433,7 @@ export function registerAdminMethods(proto) {
 
                 <div class="grid-2" style="margin-bottom:16px;" id="localVideoUploadGroup">
                   <div class="upload-zone">
-                    <div style="font-size:1.8rem; margin-bottom:4px;">🎬</div>
+                    <div style="color:var(--gold-400); margin-bottom:6px;">${this.icon('film', 26)}</div>
                     <div style="font-weight:800; color:var(--gold-400); font-size:0.9rem; margin-bottom:8px;">١- ملف الفيديو (MP4 / WebM)</div>
                     <input type="file" id="videoFileUploadInput" accept="video/mp4,video/webm" class="form-control" data-change="uploadAdminFile" data-upload-type="video" />
                     <input type="hidden" id="uploadedVideoPath" value="" />
@@ -452,7 +452,7 @@ export function registerAdminMethods(proto) {
                   </div>
 
                   <div class="upload-zone">
-                    <div style="font-size:1.8rem; margin-bottom:4px;">📄</div>
+                    <div style="color:var(--gold-400); margin-bottom:6px;">${this.icon('file-text', 26)}</div>
                     <div style="font-weight:800; color:var(--gold-400); font-size:0.9rem; margin-bottom:8px;">٢- ملف المذكرة (PDF محمي)</div>
                     <input type="file" id="pdfFileUploadInput" accept="application/pdf,.pdf" class="form-control" data-change="uploadAdminFile" data-upload-type="pdf" />
                     <input type="hidden" id="uploadedPdfPath" value="" />
@@ -571,7 +571,7 @@ export function registerAdminMethods(proto) {
                       </div>
                       <div style="display:flex; gap:6px; flex-wrap:wrap;">
                         <button type="button" class="btn btn-sm btn-emerald" data-click="updateLiveSessionStatus" data-id="${Number(s.id)}" data-arg="live">${this.icon("radio", 15)} بدء الآن</button>
-                        <button type="button" class="btn btn-sm btn-outline-gold" data-click="updateLiveSessionStatus" data-id="${Number(s.id)}" data-arg="ended">⏹️ إنهاء</button>
+                        <button type="button" class="btn btn-sm btn-outline-gold" data-click="updateLiveSessionStatus" data-id="${Number(s.id)}" data-arg="ended">${this.icon('stop-circle', 14)} <span>إنهاء</span></button>
                         <button type="button" class="btn btn-sm btn-gold" data-click="viewLiveAttendance" data-id="${Number(s.id)}">${this.icon("file-text", 14)} الحضور</button>
                         <button type="button" class="btn btn-sm btn-danger" data-click="deleteLiveSession" data-id="${Number(s.id)}">${this.icon("trash", 14)}</button>
                       </div>
@@ -618,13 +618,13 @@ export function registerAdminMethods(proto) {
                   <label>نص الإشعار</label>
                   <textarea id="notifBody" class="form-control" rows="3" maxlength="800" placeholder="اكتب التنبيه أو الإعلان للطلاب..." required></textarea>
                 </div>
-                <button type="submit" class="btn btn-gold" style="width:100%; padding:12px;">📩 إرسال الإشعار الآن</button>
+                <button type="submit" class="btn btn-gold" style="width:100%; padding:12px;">${this.icon('send', 15)} <span>إرسال الإشعار الآن</span></button>
               </form>
             </div>
 
             <div class="section-card" style="max-width:740px; margin:18px auto 0;">
               <div class="section-header">
-                <h3 class="section-title">📜 آخر الإشعارات المرسلة (${list.length})</h3>
+                <h3 class="section-title">${this.icon('scroll', 17)} <span>آخر الإشعارات المرسلة (${list.length})</span></h3>
               </div>
               <div style="display:flex; flex-direction:column; gap:10px;">
                 ${list.length === 0 ? `<div style="color:var(--text-secondary); text-align:center;">لا توجد إشعارات مسجلة بعد.</div>` : list.map((n) => `
@@ -722,7 +722,7 @@ export function registerAdminMethods(proto) {
               </div>
 
               ${d.failed_submissions.length === 0 ? `
-                <div style="text-align:center; padding:32px; color:#6ee7b7;">🎉 لا يوجد طلاب راسبون حالياً!</div>
+                <div style="text-align:center; padding:32px; color:var(--success-text); display:flex; align-items:center; justify-content:center; gap:8px;">${this.icon('check-circle', 20)} <span>لا يوجد طلاب راسبون حالياً.</span></div>
               ` : `
                 <div class="table-responsive">
                   <table class="matn-table">
@@ -778,13 +778,13 @@ export function registerAdminMethods(proto) {
                   <select class="form-control" style="width:auto; padding:7px 12px;" data-change="onAdminStudentsFilterChange">
                     <option value="all" ${this.adminStudentsFilter === 'all' ? 'selected' : ''}>الكل</option>
                     <option value="active" ${this.adminStudentsFilter === 'active' ? 'selected' : ''}>اشتراك نشط</option>
-                    <option value="expiring_soon" ${this.adminStudentsFilter === 'expiring_soon' ? 'selected' : ''}>⏳ ينتهي خلال ٣ أيام (${Number(d.expiring_soon_count || 0)})</option>
+                    <option value="expiring_soon" ${this.adminStudentsFilter === 'expiring_soon' ? 'selected' : ''}>ينتهي خلال ٣ أيام (${Number(d.expiring_soon_count || 0)})</option>
                     <option value="expired" ${this.adminStudentsFilter === 'expired' ? 'selected' : ''}>غير مشترك / منتهٍ</option>
-                    <option value="locked" ${this.adminStudentsFilter === 'locked' ? 'selected' : ''}>⛔ موقوف إدارياً</option>
+                    <option value="locked" ${this.adminStudentsFilter === 'locked' ? 'selected' : ''}>موقوف إدارياً</option>
                     <option value="device_reset" ${this.adminStudentsFilter === 'device_reset' ? 'selected' : ''}>طلب تغيير جهاز</option>
                   </select>
-                  ${hasPrev ? `<button class="btn btn-outline-gold btn-sm" data-click="pageStudents" data-arg="${Math.max(0, this.adminStudentsOffset - this.adminPageSize)}">⬅️ السابق</button>` : ''}
-                  ${hasNext ? `<button class="btn btn-outline-gold btn-sm" data-click="pageStudents" data-arg="${this.adminStudentsOffset + this.adminPageSize}">التالي ➡️</button>` : ''}
+                  ${hasPrev ? `<button class="btn btn-outline-gold btn-sm" data-click="pageStudents" data-arg="${Math.max(0, this.adminStudentsOffset - this.adminPageSize)}">${this.icon('chevron-right', 14)} <span>السابق</span></button>` : ''}
+                  ${hasNext ? `<button class="btn btn-outline-gold btn-sm" data-click="pageStudents" data-arg="${this.adminStudentsOffset + this.adminPageSize}"><span>التالي</span> ${this.icon('chevron-left', 14)}</button>` : ''}
                 </div>
               </div>
 
@@ -812,46 +812,46 @@ export function registerAdminMethods(proto) {
                         <tr style="${st.is_locked ? 'opacity:0.68;' : ''}">
                           <td style="font-weight:800; color:var(--gold-300);">
                             ${this.esc(st.full_name)}
-                            ${st.is_locked ? `<div><span class="badge badge-danger">⛔ موقوف إدارياً</span></div>` : ''}
+                            ${st.is_locked ? `<div><span class="badge badge-danger">${this.icon('ban', 12)} <span>موقوف إدارياً</span></span></div>` : ''}
                           </td>
                           <td>
-                            <div>📱 ${this.esc(st.phone)}</div>
-                            <div style="font-size:0.75rem; color:var(--text-secondary);">ولي الأمر: ${this.esc(st.parent_phone || '-')}</div>
+                            <div style="display:flex; align-items:center; gap:5px;">${this.icon('smartphone', 13)} <span dir="ltr">${this.esc(st.phone)}</span></div>
+                            <div style="font-size:0.75rem; color:var(--text-secondary);">ولي الأمر: <span dir="ltr">${this.esc(st.parent_phone || '-')}</span></div>
                           </td>
                           <td>
                             <div>${this.esc(GRADES_META[st.grade] || st.grade)}</div>
                             <span class="badge badge-gold">${this.esc(BRANCHES_META[st.branch] || st.branch)}</span>
-                            <span class="badge badge-success">${this.icon("video", 15)} ${Number(st.avg_watch_percent || 0)}%</span>
+                            <span class="badge badge-success">${this.icon('video', 14)} ${Number(st.avg_watch_percent || 0)}%</span>
                           </td>
                           <td>
                             ${st.is_whatsapp_verified
-                              ? `<span class="badge badge-success">${this.icon("check-circle", 14)} مفعل</span>`
+                              ? `<span class="badge badge-success">${this.icon('check-circle', 13)} <span>مفعل</span></span>`
                               : `<div>
-                                   <span class="badge badge-danger">⏳ بانتظار التفعيل</span>
+                                   <span class="badge badge-danger">${this.icon('hourglass', 12)} <span>بانتظار التفعيل</span></span>
                                    <button class="btn btn-sm btn-emerald" style="margin-top:4px;" data-click="verifyStudentWhatsappManually" data-id="${Number(st.id)}">تفعيل يدوي</button>
                                  </div>`}
                           </td>
                           <td>
                             ${active
-                              ? `<span class="badge ${daysLeft <= 3 ? 'badge-warning' : 'badge-success'}">${daysLeft <= 3 ? `⏳ ${daysLeft} يوم` : 'سارٍ'} (${this.esc(exp.toLocaleDateString('ar-EG'))})</span>`
+                              ? `<span class="badge ${daysLeft <= 3 ? 'badge-warning' : 'badge-success'}">${daysLeft <= 3 ? `${this.icon('hourglass', 12)} ${daysLeft} يوم` : 'سارٍ'} (${this.esc(exp.toLocaleDateString('ar-EG'))})</span>`
                               : `<span class="badge badge-danger">غير مشترك</span>`}
                           </td>
                           <td>
                             ${st.device_id
-                              ? `<span class="badge badge-gold">${this.icon("lock", 14)} ${this.esc(st.device_name || 'جهاز الطالب')}</span>`
+                              ? `<span class="badge badge-gold">${this.icon('lock', 13)} ${this.esc(st.device_name || 'جهاز الطالب')}</span>`
                               : `<span style="color:var(--text-secondary); font-size:0.78rem;">مفتوح لأول دخول</span>`}
-                            ${st.device_reset_requested ? `<div style="margin-top:4px;"><span class="badge badge-danger">${this.icon("bell", 15)} طلب إعادة تعيين جهاز</span></div>` : ''}
+                            ${st.device_reset_requested ? `<div style="margin-top:4px;"><span class="badge badge-danger">${this.icon('bell', 13)} طلب إعادة تعيين جهاز</span></div>` : ''}
                           </td>
                           <td>
                             <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                              <button class="btn btn-whatsapp btn-sm" data-click="openParentReportModal" data-id="${Number(st.id)}">${this.icon("smartphone", 15)} ولي الأمر</button>
-                              <button class="btn btn-outline-gold btn-sm" data-click="resetStudentDevice" data-id="${Number(st.id)}">${this.icon("unlock", 14)} مسح الجهاز</button>
-                              <button class="btn btn-outline-gold btn-sm" data-click="openResetStudentPasswordModal" data-id="${Number(st.id)}" data-name="${this.esc(st.full_name)}">${this.icon("key", 14)} باسورد</button>
+                              <button class="btn btn-whatsapp btn-sm" data-click="openParentReportModal" data-id="${Number(st.id)}">${this.icon('smartphone', 14)} <span>ولي الأمر</span></button>
+                              <button class="btn btn-outline-gold btn-sm" data-click="resetStudentDevice" data-id="${Number(st.id)}">${this.icon('unlock', 14)} <span>مسح الجهاز</span></button>
+                              <button class="btn btn-outline-gold btn-sm" data-click="openResetStudentPasswordModal" data-id="${Number(st.id)}" data-name="${this.esc(st.full_name)}">${this.icon('key', 14)} <span>باسورد</span></button>
                               <button class="btn btn-emerald btn-sm" data-click="grantStudentMonth" data-id="${Number(st.id)}">+30 يوم</button>
                               ${st.is_locked
-                                ? `<button class="btn btn-emerald btn-sm" data-click="unlockStudentAccount" data-id="${Number(st.id)}">${this.icon("unlock", 14)} تفعيل</button>`
-                                : `<button class="btn btn-danger btn-sm" data-click="lockStudentAccount" data-id="${Number(st.id)}">⛔ إيقاف</button>`}
-                              <button class="btn btn-danger btn-sm" data-click="deleteStudentAccount" data-id="${Number(st.id)}">${this.icon("trash", 14)}</button>
+                                ? `<button class="btn btn-emerald btn-sm" data-click="unlockStudentAccount" data-id="${Number(st.id)}">${this.icon('unlock', 14)} <span>تفعيل</span></button>`
+                                : `<button class="btn btn-danger btn-sm" data-click="lockStudentAccount" data-id="${Number(st.id)}">${this.icon('ban', 14)} <span>إيقاف</span></button>`}
+                              <button class="btn btn-danger btn-sm" data-click="deleteStudentAccount" data-id="${Number(st.id)}" aria-label="حذف">${this.icon('trash', 14)}</button>
                             </div>
                           </td>
                         </tr>
@@ -873,7 +873,7 @@ export function registerAdminMethods(proto) {
             <div class="grid-3 no-print" style="margin-bottom:16px;">
               <div class="stat-box">
                 <span class="stat-label">إيراد هذا الشهر</span>
-                <span class="stat-value" style="color:#6ee7b7;">${Number(rev.month_revenue_egp || 0).toLocaleString('ar-EG')} ج.م</span>
+                <span class="stat-value" style="color:var(--success-text);">${Number(rev.month_revenue_egp || 0).toLocaleString('ar-EG')} ج.م</span>
                 <span style="font-size:0.74rem; color:var(--text-secondary);">كروت مفعّلة هذا الشهر: ${Number(rev.month_used_vouchers || 0)}</span>
               </div>
               <div class="stat-box">
@@ -890,7 +890,7 @@ export function registerAdminMethods(proto) {
             <div class="section-card no-print" style="border-color:rgba(16,185,129,0.45); background:linear-gradient(135deg, rgba(16,185,129,0.08), rgba(212,178,106,0.06));">
               <div class="section-header" style="margin-bottom:10px;">
                 <div>
-                  <h3 class="section-title" style="color:#6ee7b7;">${this.icon("message-circle", 16)} الرد السريع على رسائل طلب الكود (تأكيد التحويل وإرسال الكود عبر واتساب)</h3>
+                  <h3 class="section-title" style="color:var(--success-text);">${this.icon("message-circle", 16)} الرد السريع على رسائل طلب الكود (تأكيد التحويل وإرسال الكود عبر واتساب)</h3>
                   <p style="font-size:0.8rem; color:var(--text-secondary); margin:4px 0 0;">
                     الصق هنا رسالة الطالب اللي طلب فيها الكود بعد ما تتأكد من وصول الفلوس — المنصة هتطلع اسمه ورقمه وصفه وتكتبلك رسالة ترحيبية جاهزة بكود التفعيل، وتضغط زر واحد يحولك لواتساب الطالب فوراً.
                   </p>
@@ -944,29 +944,29 @@ export function registerAdminMethods(proto) {
                 <div class="form-group">
                   <div class="card-meta-row" style="margin-bottom:4px;">
                     <label style="margin:0;">٢) رسالة الترحيب الجاهزة للطالب (تقدر تعدّل فيها براحتك — رمز <code>{CODE}</code> هيتبدّل بالكود الحقيقي):</label>
-                    <button type="button" class="btn btn-outline-gold btn-sm" style="padding:3px 10px; font-size:0.75rem;" data-click="regenerateQuickGreeting">🔄 إعادة صياغة الترحيب</button>
+                    <button type="button" class="btn btn-outline-gold btn-sm" style="padding:4px 10px; font-size:0.75rem;" data-click="regenerateQuickGreeting">${this.icon('refresh', 13)} <span>إعادة صياغة الترحيب</span></button>
                   </div>
                   <textarea id="quickReplyGreetingText" class="form-control" rows="5" data-input="markQuickGreetingCustom">${this.esc(this._quickVoucherGreeting || this.buildQuickVoucherGreetingTemplate('', 'all', 'all'))}</textarea>
                 </div>
 
                 <button type="submit" class="btn btn-whatsapp" style="width:100%; padding:13px; font-size:0.98rem; font-weight:800;">
-                  ${this.icon("message-circle", 17)} تجهيز كود التفعيل وفتح واتساب الطالب بالرسالة الجاهزة
+                  ${this.icon('message-circle', 17)} <span>تجهيز كود التفعيل وفتح واتساب الطالب بالرسالة الجاهزة</span>
                 </button>
               </form>
 
               ${this._quickVoucherResult ? `
                 <div id="quickReplyReadyBox" style="margin-top:14px; background:rgba(16,185,129,0.12); border:1.5px solid #10b981; border-radius:14px; padding:14px;">
-                  <div style="font-weight:900; color:#6ee7b7; font-size:0.95rem; margin-bottom:6px;">
-                    ✅ تم تجهيز وحجز الكود للطالب (${this.esc(this._quickVoucherResult.recipient_name || '')}):
+                  <div style="font-weight:900; color:var(--success-text); font-size:0.95rem; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+                    ${this.icon('check-circle', 16)} <span>تم تجهيز وحجز الكود للطالب (${this.esc(this._quickVoucherResult.recipient_name || '')}):</span>
                   </div>
                   <div class="scratch-code-box" style="margin:6px 0 10px;">${this.esc(this._quickVoucherResult.code)}</div>
                   <pre style="white-space:pre-wrap; font-family:inherit; background:var(--bg-main); border:1px solid var(--border-subtle); border-radius:10px; padding:10px 12px; font-size:0.84rem; margin:0 0 12px;">${this.esc(this._quickVoucherResult.whatsapp_message)}</pre>
                   <div style="display:flex; gap:8px; flex-wrap:wrap;">
                     <a href="${this.esc(this.safeHttpsUrl(this._quickVoucherResult.whatsapp_url) || '#')}" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp" style="flex:1; min-width:220px; text-align:center;">
-                      ${this.icon("message-circle", 16)} <span>اضغط هنا للتحويل مباشرة لواتساب الطالب بالرسالة 📲</span>
+                      ${this.icon('send', 16)} <span>التحويل مباشرة لواتساب الطالب بالرسالة</span>
                     </a>
                     <button type="button" class="btn btn-outline-gold" data-click="copyText" data-copy="${this.esc(this._quickVoucherResult.whatsapp_message)}" data-label="رسالة التفعيل">
-                      📋 نسخ الرسالة
+                      ${this.icon('clipboard', 15)} <span>نسخ الرسالة</span>
                     </button>
                   </div>
                 </div>
@@ -1009,23 +1009,23 @@ export function registerAdminMethods(proto) {
                     <option value="tajweed">التجويد فقط</option>
                   </select>
                 </div>
-                <button type="submit" class="btn btn-gold" style="height:44px;">⚡ توليد الكروت</button>
+                <button type="submit" class="btn btn-gold" style="height:44px;">${this.icon('zap', 15)} <span>توليد الكروت</span></button>
               </form>
             </div>
 
             <div class="section-card">
               <div class="section-header no-print" style="gap:10px;">
-                <h3 class="section-title">${this.icon("file-text", 15)} كروت الشحن (${totalVouchers})</h3>
+                <h3 class="section-title">${this.icon('file-text', 15)} <span>كروت الشحن (${totalVouchers})</span></h3>
                 <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
                   <input type="text" id="adminVouchersSearchInput" class="form-control" style="width:190px; padding:6px 10px;" placeholder="كود، دفعة، أو طالب..." value="${this.esc(this.adminVouchersQuery || '')}" data-input="searchAdminVouchers" />
                   <select class="form-control" style="width:auto; padding:6px 10px;" data-change="onAdminVouchersFilterChange">
                     <option value="all" ${this.adminVouchersFilter === 'all' ? 'selected' : ''}>الكل</option>
                     <option value="unused" ${this.adminVouchersFilter === 'unused' ? 'selected' : ''}>متاح لم يُرسل</option>
-                    <option value="reserved" ${this.adminVouchersFilter === 'reserved' ? 'selected' : ''}>📤 محجوز / مُرسَل</option>
+                    <option value="reserved" ${this.adminVouchersFilter === 'reserved' ? 'selected' : ''}>محجوز / مُرسَل</option>
                     <option value="used" ${this.adminVouchersFilter === 'used' ? 'selected' : ''}>مستخدَم</option>
                   </select>
-                  ${hasPrev ? `<button class="btn btn-outline-gold btn-sm" data-click="pageVouchers" data-arg="${Math.max(0, this.adminVouchersOffset - this.adminPageSize)}">⬅️ السابق</button>` : ''}
-                  ${hasNext ? `<button class="btn btn-outline-gold btn-sm" data-click="pageVouchers" data-arg="${this.adminVouchersOffset + this.adminPageSize}">التالي ➡️</button>` : ''}
+                  ${hasPrev ? `<button class="btn btn-outline-gold btn-sm" data-click="pageVouchers" data-arg="${Math.max(0, this.adminVouchersOffset - this.adminPageSize)}">${this.icon('chevron-right', 14)} <span>السابق</span></button>` : ''}
+                  ${hasNext ? `<button class="btn btn-outline-gold btn-sm" data-click="pageVouchers" data-arg="${this.adminVouchersOffset + this.adminPageSize}"><span>التالي</span> ${this.icon('chevron-left', 14)}</button>` : ''}
                   <button class="btn btn-gold btn-sm" data-click="printVouchers">${this.icon("file-text", 15)} طباعة الكروت</button>
                 </div>
               </div>
@@ -1044,7 +1044,7 @@ export function registerAdminMethods(proto) {
                           </div>
                         </div>
                         <span class="badge ${v.is_used ? 'badge-danger' : (isReserved ? 'badge-warning' : 'badge-success')}">
-                          ${v.is_used ? 'مستخدَم' : (isReserved ? '📤 محجوز/مُرسَل' : `${Number(v.duration_days)} يوماً`)}
+                          ${v.is_used ? 'مستخدَم' : (isReserved ? `${this.icon('send', 12)} محجوز/مُرسَل` : `${Number(v.duration_days)} يوماً`)}
                         </span>
                       </div>
                       <div class="scratch-code-box">${this.esc(v.code)}</div>
@@ -1053,19 +1053,19 @@ export function registerAdminMethods(proto) {
                         <span>${this.esc(v.grade_scope === 'all' ? 'كل الصفوف' : (GRADES_META[v.grade_scope] || v.grade_scope))}</span>
                       </div>
                       ${v.is_used ? `
-                        <div style="font-size:0.72rem; color:#fda4af;">استخدمه: <b>${this.esc(v.used_by_name || v.used_by_phone || 'طالب')}</b></div>
+                        <div style="font-size:0.72rem; color:var(--danger-text);">استخدمه: <b>${this.esc(v.used_by_name || v.used_by_phone || 'طالب')}</b></div>
                       ` : `
                         ${isReserved ? `
                           <div class="no-print" style="background:rgba(212,178,106,0.1); border:1px solid rgba(212,178,106,0.35); border-radius:8px; padding:6px 8px; font-size:0.72rem; margin-bottom:6px;">
-                            <div>📤 أُرسل إلى: <b>${this.esc(v.assigned_to_name)}</b> (<span dir="ltr">${this.esc(v.assigned_to_phone)}</span>)</div>
-                            ${v.restrict_to_phone ? `<div style="color:#6ee7b7; font-weight:700;">${this.icon("lock", 14)} مقفول على هذا الرقم فقط</div>` : ''}
+                            <div style="display:flex; align-items:center; gap:5px;">${this.icon('send', 12)} <span>أُرسل إلى: <b>${this.esc(v.assigned_to_name)}</b> (<span dir="ltr">${this.esc(v.assigned_to_phone)}</span>)</span></div>
+                            ${v.restrict_to_phone ? `<div style="color:var(--success-text); font-weight:700;">${this.icon('lock', 13)} مقفول على هذا الرقم فقط</div>` : ''}
                           </div>
                         ` : ''}
                         <div class="no-print" style="display:flex; gap:6px; flex-wrap:wrap; margin-top:4px;">
                           <button type="button" class="btn btn-whatsapp btn-sm" style="flex:1;" data-click="openSendVoucherModal" data-id="${Number(v.id)}">
-                            ${isReserved ? 'إعادة الإرسال' : 'إرسال لطالب عبر واتساب'}
+                            ${this.icon('send', 13)} <span>${isReserved ? 'إعادة الإرسال' : 'إرسال لطالب عبر واتساب'}</span>
                           </button>
-                          ${isReserved ? `<button type="button" class="btn btn-outline-gold btn-sm" data-click="releaseVoucherAssignment" data-id="${Number(v.id)}">↩️ فك الحجز</button>` : ''}
+                          ${isReserved ? `<button type="button" class="btn btn-outline-gold btn-sm" data-click="releaseVoucherAssignment" data-id="${Number(v.id)}">${this.icon('undo', 13)} <span>فك الحجز</span></button>` : ''}
                         </div>
                       `}
                     </div>
@@ -1091,7 +1091,7 @@ export function registerAdminMethods(proto) {
                   <h3 class="section-title">${this.icon("calendar", 15)} متابعة أولياء الأمور الأسبوعية (كل جمعة الساعة ٣ عصراً بالتتابع)</h3>
                   <p style="font-size:0.82rem; color:var(--text-secondary);">
                     الأسبوع المسجل: <b>${this.esc(wr.week_key || wr.current_friday_key || '')}</b> •
-                    الجدولة التلقائية كل جمعة ٣ عصراً: <b>${wr.auto_friday_reports_enabled ? 'مفعلة' : '⏸️ متوقفة'}</b>
+                    الجدولة التلقائية كل جمعة ٣ عصراً: <b>${wr.auto_friday_reports_enabled ? 'مفعلة' : 'متوقفة مؤقتاً'}</b>
                   </p>
                 </div>
                 <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
@@ -1099,20 +1099,20 @@ export function registerAdminMethods(proto) {
                     <input type="checkbox" id="weeklyIncludeAllVerified" />
                     <span>شامل جميع الطلاب المسجلين</span>
                   </label>
-                  <button type="button" class="btn btn-whatsapp btn-sm" data-click="runWeeklyParentReports">${this.icon("zap", 15)} إرسال التقارير إلى جميع أولياء الأمور الآن</button>
-                  ${items.length > 0 ? `<button type="button" class="btn btn-outline-gold btn-sm" data-click="copyAllWeeklyReports">${this.icon("file-text", 14)} نسخ كل الأرقام والرسائل</button>` : ''}
+                  <button type="button" class="btn btn-whatsapp btn-sm" data-click="runWeeklyParentReports">${this.icon('zap', 15)} <span>إرسال التقارير إلى جميع أولياء الأمور الآن</span></button>
+                  ${items.length > 0 ? `<button type="button" class="btn btn-outline-gold btn-sm" data-click="copyAllWeeklyReports">${this.icon('file-text', 14)} <span>نسخ كل الأرقام والرسائل</span></button>` : ''}
                 </div>
               </div>
 
               <div style="background:${d.whatsapp_gateway_configured ? 'rgba(16,185,129,0.1)' : 'rgba(212,178,106,0.1)'}; border:1px solid ${d.whatsapp_gateway_configured ? '#10b981' : 'var(--border-gold)'}; border-radius:12px; padding:12px 14px; margin-bottom:16px; font-size:0.83rem;">
                 ${d.whatsapp_gateway_configured
-                  ? `${this.icon("check-circle", 14)} <b>بوابة الواتساب الآلية مربوطة في السيرفر:</b> تقوم المنصة كل يوم جمعة الساعة 3:00 عصراً (بتوقيت القاهرة) بإرسال التقارير إلى أرقام أولياء الأمور <b>تلقائياً طالباً تلو الآخر بالتتابع</b>.`
-                  : `${this.icon("settings", 15)} <b>ملاحظة هامة عن الإرسال الآلي:</b> المنصة مُبرمجة بالفعل لجدولة وإرسال تقارير أولياء الأمور تلقائياً كل جمعة 3:00 عصراً طالباً تلو الآخر، وبدون بوابة واتساب آلية تجهز المنصة قائمة الطلاب بالأسفل لتضغط على <b>«إرسال التالي الآن»</b> طالباً تلو الآخر بنقرة واحدة!`}
+                  ? `${this.icon('check-circle', 14)} <b>بوابة الواتساب الآلية مربوطة في السيرفر:</b> تقوم المنصة كل يوم جمعة الساعة 3:00 عصراً (بتوقيت القاهرة) بإرسال التقارير إلى أرقام أولياء الأمور <b>تلقائياً طالباً تلو الآخر بالتتابع</b>.`
+                  : `${this.icon('settings', 15)} <b>ملاحظة هامة عن الإرسال الآلي:</b> المنصة مُبرمجة بالفعل لجدولة وإرسال تقارير أولياء الأمور تلقائياً كل جمعة 3:00 عصراً طالباً تلو الآخر، وبدون بوابة واتساب آلية تجهز المنصة قائمة الطلاب بالأسفل لتضغط على <b>«إرسال التالي الآن»</b> طالباً تلو الآخر بنقرة واحدة!`}
               </div>
 
               <div class="grid-3" style="margin-bottom:16px;">
                 <div class="stat-box"><span class="stat-label">إجمالي الطلاب في القائمة</span><span class="stat-value">${items.length}</span></div>
-                <div class="stat-box"><span class="stat-label">تم إرساله بالفعل</span><span class="stat-value" style="color:#6ee7b7;">${sentCount}</span></div>
+                <div class="stat-box"><span class="stat-label">تم إرساله بالفعل</span><span class="stat-value" style="color:var(--success-text);">${sentCount}</span></div>
                 <div class="stat-box"><span class="stat-label">متبقٍ في الدور (طالب تلو الآخر)</span><span class="stat-value" style="color:var(--gold-400);">${pendingItems.length}</span></div>
               </div>
 
@@ -1120,12 +1120,12 @@ export function registerAdminMethods(proto) {
                 <div style="background:linear-gradient(135deg, rgba(37,211,102,0.12), var(--bg-card)); border:1.5px solid #25D366; border-radius:14px; padding:14px; margin-bottom:16px;">
                   <div class="card-meta-row" style="margin-bottom:8px;">
                     <div>
-                      <span class="badge badge-success">⏭️ الطالب التالي في الدور</span>
+                      <span class="badge badge-success">${this.icon('skip-forward', 12)} <span>الطالب التالي في الدور</span></span>
                       <h4 style="color:var(--text-primary); margin-top:4px;">${this.esc(nextItem.student_name)} — ولي الأمر: <span dir="ltr">${this.esc(nextItem.parent_phone)}</span></h4>
                     </div>
-                    <button type="button" class="btn btn-whatsapp" data-click="sendNextSequentialWeeklyReport" data-id="${Number(nextItem.id)}">${this.icon("smartphone", 15)} إرسال الآن والانتقال للطالب التالي</button>
+                    <button type="button" class="btn btn-whatsapp" data-click="sendNextSequentialWeeklyReport" data-id="${Number(nextItem.id)}">${this.icon('smartphone', 15)} <span>إرسال الآن والانتقال للطالب التالي</span></button>
                   </div>
-                  <pre style="white-space:pre-wrap; font-family:inherit; font-size:0.8rem; color:var(--text-secondary); background:rgba(0,0,0,0.25); padding:10px; border-radius:8px;">${this.esc(nextItem.report_text)}</pre>
+                  <pre style="white-space:pre-wrap; font-family:inherit; font-size:0.8rem; color:var(--text-secondary); background:rgba(0,0,0,0.22); padding:10px; border-radius:8px;">${this.esc(nextItem.report_text)}</pre>
                 </div>
               ` : ''}
 
@@ -1139,8 +1139,8 @@ export function registerAdminMethods(proto) {
                           <td>${idx + 1}</td>
                           <td style="font-weight:800; color:var(--gold-300);">${this.esc(item.student_name)}</td>
                           <td dir="ltr">${this.esc(item.parent_phone)}</td>
-                          <td><span class="badge ${item.status === 'sent' ? 'badge-success' : (item.status === 'failed' ? 'badge-danger' : 'badge-gold')}">${item.status === 'sent' ? 'تم الإرسال' : (item.status === 'failed' ? 'تعذر' : '📤 جاهز في الدور')}</span></td>
-                          <td>${item.status === 'sent' ? `<span style="font-size:0.76rem; color:var(--text-secondary);">${this.esc(item.sent_at ? new Date(item.sent_at).toLocaleString('ar-EG') : '')}</span>` : `<button type="button" class="btn btn-whatsapp btn-sm" data-click="sendNextSequentialWeeklyReport" data-id="${Number(item.id)}">${this.icon("smartphone", 15)} إرسال عبر واتساب</button>`}</td>
+                          <td><span class="badge ${item.status === 'sent' ? 'badge-success' : (item.status === 'failed' ? 'badge-danger' : 'badge-gold')}">${item.status === 'sent' ? 'تم الإرسال' : (item.status === 'failed' ? 'تعذر' : `${this.icon('send', 12)} جاهز في الدور`)}</span></td>
+                          <td>${item.status === 'sent' ? `<span style="font-size:0.76rem; color:var(--text-secondary);">${this.esc(item.sent_at ? new Date(item.sent_at).toLocaleString('ar-EG') : '')}</span>` : `<button type="button" class="btn btn-whatsapp btn-sm" data-click="sendNextSequentialWeeklyReport" data-id="${Number(item.id)}">${this.icon('smartphone', 15)} <span>إرسال عبر واتساب</span></button>`}</td>
                         </tr>
                       `).join('')}
                     </tbody>
@@ -1159,7 +1159,7 @@ export function registerAdminMethods(proto) {
             <div class="section-card">
               <div class="section-header">
                 <div>
-                  <h3 class="section-title">${this.icon("help-circle", 15)} أسئلة الطلاب لفضيلة الأستاذ (${qsList.length})</h3>
+                  <h3 class="section-title">${this.icon('help-circle', 16)} <span>أسئلة الطلاب لفضيلة الأستاذ (${qsList.length})</span></h3>
                   <p style="font-size:0.82rem; color:var(--text-secondary);">أجب على أسئلة الطلاب واختر نشر الإجابة ليراها طلاب المحاضرة أو إخفاءها</p>
                 </div>
               </div>
@@ -1171,12 +1171,12 @@ export function registerAdminMethods(proto) {
                         <div>
                           <span class="badge badge-gold">${this.esc(q.lesson_title)}</span>
                           <span class="badge ${q.admin_answer ? (q.is_published ? 'badge-success' : 'badge-gold') : 'badge-danger'}">
-                            ${q.admin_answer ? (q.is_published ? 'مُجاب ومنشور' : 'مُجاب (غير منشور)') : '⏳ بانتظار الرد'}
+                            ${q.admin_answer ? (q.is_published ? 'مُجاب ومنشور' : 'مُجاب (غير منشور)') : `${this.icon('hourglass', 12)} بانتظار الرد`}
                           </span>
                         </div>
-                        <button type="button" class="btn btn-danger btn-sm" data-click="deleteLessonQuestion" data-id="${Number(q.id)}">${this.icon("trash", 14)} حذف</button>
+                        <button type="button" class="btn btn-danger btn-sm" data-click="deleteLessonQuestion" data-id="${Number(q.id)}">${this.icon('trash', 14)} <span>حذف</span></button>
                       </div>
-                      <div style="font-size:0.8rem; color:var(--gold-300); margin-bottom:4px;">🎓 الطالب: <b>${this.esc(q.student_name)}</b></div>
+                      <div style="font-size:0.8rem; color:var(--gold-300); margin-bottom:4px; display:flex; align-items:center; gap:5px;">${this.icon('graduation-cap', 14)} <span>الطالب: <b>${this.esc(q.student_name)}</b></span></div>
                       <div style="font-size:0.92rem; color:var(--text-primary); margin-bottom:10px;">${this.esc(q.question_text)}</div>
                       <form data-submit="handleAnswerLessonQuestion" data-id="${Number(q.id)}">
                         <div class="form-group" style="margin-bottom:8px;">
@@ -1254,7 +1254,7 @@ export function registerAdminMethods(proto) {
 
           ${sharedDevices.length > 0 ? `
             <div class="section-card" style="border-color:rgba(244,63,94,0.45);">
-              <div class="section-header"><h3 class="section-title" style="color:#fda4af;">${this.icon("alert-triangle", 15)} تنبيه: أجهزة مشتركة بين أكثر من حساب طالب (${sharedDevices.length})</h3></div>
+              <div class="section-header"><h3 class="section-title" style="color:var(--danger-text);">${this.icon("alert-triangle", 15)} تنبيه: أجهزة مشتركة بين أكثر من حساب طالب (${sharedDevices.length})</h3></div>
               <div style="display:flex; flex-direction:column; gap:8px;">
                 ${sharedDevices.map((m) => `
                   <div style="background:var(--bg-card); border:1px solid rgba(244,63,94,0.3); padding:10px 12px; border-radius:10px;">
@@ -1301,7 +1301,7 @@ export function registerAdminMethods(proto) {
                       <span class="badge ${w.status === 'sent' ? 'badge-success' : w.status === 'failed' ? 'badge-danger' : 'badge-gold'}">${this.esc(w.status)}</span>
                     </div>
                     <div style="font-size:0.8rem; color:var(--text-secondary);">${this.esc(w.message_summary || '')}</div>
-                    ${w.failure_reason ? `<div style="font-size:0.74rem; color:#fda4af; margin-top:4px;">السبب: ${this.esc(w.failure_reason)}</div>` : ''}
+                    ${w.failure_reason ? `<div style="font-size:0.74rem; color:var(--danger-text); margin-top:4px;">السبب: ${this.esc(w.failure_reason)}</div>` : ''}
                   </div>
                 `).join('')}
               </div>
@@ -1329,8 +1329,8 @@ export function registerAdminMethods(proto) {
             <div class="form-group">
               <label>نوع السؤال</label>
               <select class="form-control q-type" data-change="onAdminQuestionTypeChange">
-                <option value="mcq" ${qType === 'mcq' ? 'selected' : ''}>🔘 اختيار من متعدد (MCQ)</option>
-                <option value="true_false" ${qType === 'true_false' ? 'selected' : ''}>✔️ صح أم خطأ</option>
+                <option value="mcq" ${qType === 'mcq' ? 'selected' : ''}>اختيار من متعدد (MCQ)</option>
+                <option value="true_false" ${qType === 'true_false' ? 'selected' : ''}>صح أم خطأ</option>
               </select>
             </div>
             <div class="form-group"><label>المبحث الشرعي</label><input type="text" class="form-control q-topic" placeholder="مثال: أحكام الطلاق" value="${this.esc(existing?.topic_tag || '')}" required /></div>
@@ -1338,7 +1338,7 @@ export function registerAdminMethods(proto) {
           </div>
           <div class="form-group"><label>نص السؤال</label><input type="text" class="form-control q-text" placeholder="اكتب السؤال أو العبارة الشرعية هنا..." value="${this.esc(existing?.question_text || '')}" required /></div>
           <div class="q-mcq-fields grid-4" style="${qType === 'true_false' ? 'display:none;' : ''}">
-            <div class="form-group"><label>الإجابة الصحيحة ✅</label><input type="text" class="form-control q-opt1" placeholder="الإجابة الصحيحة" value="${this.esc(qType === 'mcq' ? correct : '')}" ${qType === 'mcq' ? 'required' : ''} /></div>
+            <div class="form-group"><label style="color:var(--success-text);">الإجابة الصحيحة</label><input type="text" class="form-control q-opt1" placeholder="الإجابة الصحيحة" value="${this.esc(qType === 'mcq' ? correct : '')}" ${qType === 'mcq' ? 'required' : ''} /></div>
             <div class="form-group"><label>اختيار خاطئ ١</label><input type="text" class="form-control q-opt2" placeholder="اختيار ٢" value="${this.esc(qType === 'mcq' ? (wrongOpts[0] || '') : '')}" ${qType === 'mcq' ? 'required' : ''} /></div>
             <div class="form-group"><label>اختيار خاطئ ٢</label><input type="text" class="form-control q-opt3" placeholder="اختيار ٣" value="${this.esc(qType === 'mcq' ? (wrongOpts[1] || '') : '')}" /></div>
             <div class="form-group"><label>اختيار خاطئ ٣</label><input type="text" class="form-control q-opt4" placeholder="اختيار ٤" value="${this.esc(qType === 'mcq' ? (wrongOpts[2] || '') : '')}" /></div>
@@ -1347,8 +1347,8 @@ export function registerAdminMethods(proto) {
             <div class="form-group" style="margin-bottom:0;">
               <label>الإجابة الصحيحة (صح أم خطأ)</label>
               <select class="form-control q-tf-correct">
-                <option value="صح" ${correct !== 'خطأ' ? 'selected' : ''}>${this.icon("check-circle", 14)} العبارة صحيحة (صح)</option>
-                <option value="خطأ" ${correct === 'خطأ' ? 'selected' : ''}>${this.icon("x-circle", 14)} العبارة خاطئة (خطأ)</option>
+                <option value="صح" ${correct !== 'خطأ' ? 'selected' : ''}>العبارة صحيحة (صح)</option>
+                <option value="خطأ" ${correct === 'خطأ' ? 'selected' : ''}>العبارة خاطئة (خطأ)</option>
               </select>
             </div>
           </div>
@@ -1403,7 +1403,7 @@ export function registerAdminMethods(proto) {
       const bunnyIdInput = document.getElementById('newLessonBunnyId');
       const title = (titleInput?.value || file.name.replace(/\.[^/.]+$/, '')).trim();
       const csrf = this.csrfToken || this.getCookie('matn_csrf_token') || '';
-      if (statusEl) statusEl.textContent = '⏳ جاري رفع الفيديو إلى Bunny Stream...';
+      if (statusEl) statusEl.textContent = 'جاري رفع الفيديو إلى Bunny Stream...';
 
       try {
         const res = await fetch('/api/admin/bunny/upload', {
@@ -1420,10 +1420,10 @@ export function registerAdminMethods(proto) {
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || 'فشل الرفع إلى Bunny Stream');
         if (bunnyIdInput) bunnyIdInput.value = data.guid;
-        if (statusEl) statusEl.textContent = `✓ تم الرفع! GUID: ${data.guid}`;
+        if (statusEl) statusEl.textContent = `تم الرفع بنجاح — GUID: ${data.guid}`;
         this.showToast(data.message, 'success');
       } catch (err) {
-        if (statusEl) statusEl.textContent = `✖ ${err.message}`;
+        if (statusEl) statusEl.textContent = `فشل الرفع: ${err.message}`;
         this.showToast(err.message, 'danger');
       }
     },
@@ -1444,7 +1444,7 @@ export function registerAdminMethods(proto) {
       if (progBar) progBar.style.width = '0%';
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.textContent = '⏳ جاري فحص ورفع الملف... يرجى الانتظار';
+        submitBtn.innerHTML = `${this.icon('upload', 15)} <span>جاري فحص ورفع الملف... يرجى الانتظار</span>`;
       }
 
       const chunkSize = 2 * 1024 * 1024;
@@ -1464,7 +1464,7 @@ export function registerAdminMethods(proto) {
 
           const pct = Math.round((chunkIndex / totalChunks) * 100);
           const curMb = (start / (1024 * 1024)).toFixed(1);
-          statusEl.textContent = `⏳ ${pct}% (${curMb} / ${totalMb} MB)`;
+          statusEl.textContent = `جاري الرفع: ${pct}% (${curMb} / ${totalMb} MB)`;
           if (progBar) progBar.style.width = `${pct}%`;
 
           const res = await fetch('/api/admin/upload-chunk', {
@@ -1489,15 +1489,15 @@ export function registerAdminMethods(proto) {
         if (progBar) progBar.style.width = '100%';
         if (uploadType === 'pdf') document.getElementById('uploadedPdfPath').value = finalData.file_path;
         else document.getElementById('uploadedVideoPath').value = finalData.file_path;
-        statusEl.textContent = `✓ تم الرفع والتحقق 100% (${totalMb} MB)`;
+        statusEl.textContent = `تم الرفع والتحقق 100% (${totalMb} MB)`;
         this.showToast(finalData.message, 'success');
       } catch (err) {
-        statusEl.textContent = `✖ فشل الرفع: ${err.message}`;
+        statusEl.textContent = `فشل الرفع: ${err.message}`;
         this.showToast(err.message, 'danger');
       } finally {
         if (submitBtn) {
           submitBtn.disabled = false;
-          submitBtn.textContent = 'حفظ ونشر المحاضرة والمذكرة للطلاب الآن';
+          submitBtn.innerHTML = `${this.icon('zap', 15)} <span>حفظ ونشر المحاضرة والمذكرة للطلاب الآن</span>`;
         }
       }
     },
@@ -2004,7 +2004,7 @@ export function registerAdminMethods(proto) {
       const scopeLine = gradeLabel ? `الاشتراك: ${subjLabel} — ${gradeLabel}` : `الاشتراك: ${subjLabel}`;
       return [
         `وعليكم السلام ورحمة الله وبركاته يا ${cleanName}`,
-        'تم تأكيد استلام التحويل بنجاح ✅',
+        'تم تأكيد استلام التحويل بنجاح.',
         `اتفضل كود التفعيل الخاص باشتراكك في منصة مَتْن (${scopeLine}):`,
         '{CODE}',
         'ادخل المنصة واضغط «حساب طالب جديد» (أو «شحن كود» من داخل حسابك) واكتب الكود.',
@@ -2220,7 +2220,7 @@ export function registerAdminMethods(proto) {
         <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:10px;">الصق الأسئلة مفصولة بسطر فارغ أو <code>---</code>.</p>
         <form data-submit="handleBulkImportQuestionsSubmit" data-container="${this.esc(containerId)}">
           <div class="form-group"><textarea id="bulkQuestionsTextarea" class="form-control" rows="11" style="font-size:0.84rem; line-height:1.6;" placeholder="${this.esc(exampleText)}" required></textarea></div>
-          <button type="submit" class="btn btn-gold" style="width:100%; padding:11px;">⚡ إضافة الأسئلة المستوردة إلى النموذج</button>
+          <button type="submit" class="btn btn-gold" style="width:100%; padding:11px;">${this.icon('zap', 15)} <span>إضافة الأسئلة المستوردة إلى النموذج</span></button>
         </form>
       `, '680px');
     },
@@ -2291,7 +2291,7 @@ export function registerAdminMethods(proto) {
         const waSafe = this.safeHttpsUrl(res.whatsapp_url);
         this.openModal(`
           <div class="card-meta-row">
-            <h3 style="color:var(--gold-400); font-size:1.05rem;">📊 تقرير متابعة ولي الأمر</h3>
+            <h3 style="color:var(--gold-400); font-size:1.05rem; display:flex; align-items:center; gap:7px;">${this.icon('bar-chart', 17)} <span>تقرير متابعة ولي الأمر</span></h3>
             <button class="btn btn-danger btn-sm" data-click="closeModal">${this.icon("x", 14)} إغلاق</button>
           </div>
           <div style="font-size:0.84rem; color:var(--text-secondary); margin-bottom:10px;">
@@ -2299,7 +2299,7 @@ export function registerAdminMethods(proto) {
           </div>
           <pre style="white-space:pre-wrap; font-family:inherit; font-size:0.84rem; background:var(--bg-card); border:1px solid var(--border-gold); padding:12px; border-radius:12px; margin-bottom:14px;">${this.esc(res.report_text)}</pre>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            ${waSafe ? `<a href="${this.esc(waSafe)}" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp" style="flex:1;">${this.icon("smartphone", 15)} إرسال عبر واتساب ولي الأمر</a>` : `<div style="color:#fda4af; font-size:0.82rem;">رقم ولي الأمر غير مسجل أو غير صالح.</div>`}
+            ${waSafe ? `<a href="${this.esc(waSafe)}" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp" style="flex:1;">${this.icon("smartphone", 15)} إرسال عبر واتساب ولي الأمر</a>` : `<div style="color:var(--danger-text); font-size:0.82rem;">رقم ولي الأمر غير مسجل أو غير صالح.</div>`}
             <button type="button" class="btn btn-outline-gold btn-sm" data-click="copyText" data-copy="${this.esc(res.report_text)}" data-label="نص التقرير">${this.icon("file-text", 14)} نسخ النص</button>
           </div>
         `, '620px');
@@ -2471,7 +2471,7 @@ export function registerAdminMethods(proto) {
           <div style="max-height:60vh; overflow-y:auto;">
             ${list.length === 0 ? `<div style="text-align:center; padding:20px; color:var(--text-secondary);">لم يسجل أي طالب حضوراً حتى الآن.</div>` : list.map((a) => `
               <div style="display:flex; justify-content:space-between; padding:8px 10px; border-bottom:1px solid var(--border-subtle); font-size:0.84rem;">
-                <span>🎓 <b>${this.esc(a.full_name)}</b> (${this.esc(a.phone)})</span>
+                <span style="display:flex; align-items:center; gap:6px;">${this.icon('graduation-cap', 15)} <b>${this.esc(a.full_name)}</b> (<span dir="ltr">${this.esc(a.phone)}</span>)</span>
                 <span style="color:var(--text-secondary);">${this.esc(new Date(a.joined_at).toLocaleString('ar-EG'))}</span>
               </div>
             `).join('')}

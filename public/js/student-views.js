@@ -1480,7 +1480,7 @@ export function registerStudentMethods(proto) {
             await page.render({ canvasContext: ctx, viewport }).promise;
 
             ctx.save();
-            ctx.font = 'bold 24px Cairo, sans-serif';
+            ctx.font = 'bold 24px "Thmanyah Sans", sans-serif';
             ctx.fillStyle = 'rgba(10, 60, 42, 0.14)';
             ctx.textAlign = 'center';
             ctx.translate(canvas.width / 2, canvas.height / 2);
@@ -1578,20 +1578,20 @@ export function registerStudentMethods(proto) {
         ctx.fillStyle = 'rgba(212, 178, 106, 0.15)';
         ctx.fillRect(36, 36, 1208, 70);
         ctx.fillStyle = '#e5c883';
-        ctx.font = 'bold 24px Cairo, sans-serif';
+        ctx.font = '700 24px "Thmanyah Sans", sans-serif';
         ctx.textAlign = 'right';
-        ctx.fillText('منصة مَتْن (MATN) • فضيلة الأستاذ محمد عبد الله', 1210, 80);
+        ctx.fillText('منصة مَتْن (MATN) · فضيلة الأستاذ محمد عبد الله', 1210, 80);
 
         const pageIdx = Math.floor((this.synthProgress / 100) * pages.length) % pages.length;
         const activePage = pages[pageIdx];
 
         ctx.fillStyle = '#f3dfb1';
-        ctx.font = 'bold 26px Cairo, sans-serif';
+        ctx.font = '700 26px "Thmanyah Serif Display", "Thmanyah Sans", serif';
         ctx.textAlign = 'center';
         const currentY = this.wrapCanvasText(ctx, activePage.heading || lesson.title, 640, 148, 1100, 34);
 
         const matnTop = currentY + 18;
-        ctx.font = 'bold 23px Amiri, serif';
+        ctx.font = '700 23px "Thmanyah Serif Text", "Thmanyah Sans", serif';
         const matnLines = this.computeWrappedLines(ctx, activePage.matn || '', 1040);
         const matnBoxHeight = Math.max(84, matnLines.length * 34 + 28);
 
@@ -1610,7 +1610,7 @@ export function registerStudentMethods(proto) {
         }
 
         ctx.textAlign = 'right';
-        ctx.font = '21px Cairo, sans-serif';
+        ctx.font = '400 21px "Thmanyah Sans", sans-serif';
         let y = matnTop + matnBoxHeight + 36;
         for (const pt of (activePage.sharh || [])) {
           if (y > 560) break;
@@ -1834,7 +1834,7 @@ export function registerStudentMethods(proto) {
             </div>
             <div style="text-align:center; background:var(--bg-main); padding:6px 14px; border-radius:10px; border:1px solid var(--gold-500);">
               <div style="font-size:0.72rem; color:var(--gold-300);">الوقت المتبقي</div>
-              <div id="examTimerCountdown" style="font-size:1.4rem; font-weight:900; color:var(--success-text); font-family:monospace;">
+              <div id="examTimerCountdown" style="font-size:1.4rem; font-weight:900; color:var(--success-text); font-variant-numeric:tabular-nums;">
                 ${String(Math.floor(sess.remainingSeconds / 60)).padStart(2, '0')}:${String(sess.remainingSeconds % 60).padStart(2, '0')}
               </div>
             </div>
@@ -1871,7 +1871,7 @@ export function registerStudentMethods(proto) {
                       data-id="${Number(q.id)}"
                       data-oindex="${oIdx}"
                     >
-                      <span class="option-letter-circle">${isTrueFalse ? (opt === 'صح' ? '✓' : '✗') : (['أ', 'ب', 'ج', 'د'][oIdx] || oIdx + 1)}</span>
+                      <span class="option-letter-circle">${isTrueFalse ? (opt === 'صح' ? this.icon('check', 15) : this.icon('x', 15)) : (['أ', 'ب', 'ج', 'د'][oIdx] || oIdx + 1)}</span>
                       <span style="flex:1; min-width:0; font-weight:${isTrueFalse ? '800' : '600'};">${this.esc(opt)}</span>
                     </div>
                   `).join('')}
@@ -2004,22 +2004,22 @@ export function registerStudentMethods(proto) {
 
       ctx.textAlign = 'center';
       ctx.fillStyle = '#d4b26a';
-      ctx.font = 'bold 50px Amiri, Cairo, serif';
+      ctx.font = '700 50px "Thmanyah Serif Display", "Thmanyah Sans", serif';
       ctx.fillText('شهادة تقدير وتفوق علمي', 700, 300);
 
       ctx.fillStyle = '#a9c2b5';
-      ctx.font = '26px Cairo, sans-serif';
+      ctx.font = '400 26px "Thmanyah Sans", sans-serif';
       ctx.fillText(`تتشرف ${this.publicSettings?.platform_name || 'منصة مَتْن (MATN)'} بمنح هذه الشهادة للطالب المتفوق:`, 700, 365);
 
       ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 46px Cairo, sans-serif';
+      ctx.font = '700 46px "Thmanyah Serif Display", "Thmanyah Sans", serif';
       ctx.fillText(String(this.user?.full_name || ''), 700, 445);
 
       const subjName = sub.subject
         ? (SUBJECTS_META[sub.subject]?.name || sub.subject)
         : 'المواد الشرعية';
       ctx.fillStyle = '#f5e4be';
-      ctx.font = 'bold 30px Cairo, sans-serif';
+      ctx.font = '700 30px "Thmanyah Sans", sans-serif';
       ctx.fillText(`لتفوقه المتميز في اختبار: ${sub.assessment_title || 'امتحان الحصة'} (${subjName})`, 700, 525);
 
       // Score badge
@@ -2029,8 +2029,8 @@ export function registerStudentMethods(proto) {
       ctx.lineWidth = 2;
       ctx.strokeRect(430, 570, 540, 100);
       ctx.fillStyle = '#6ee7b7';
-      ctx.font = 'bold 38px Cairo, sans-serif';
-      ctx.fillText(`الدرجة: ${Number(sub.score)} / ${Number(sub.total_points)}  •  النسبة: ${Number(sub.percentage)}%`, 700, 634);
+      ctx.font = '700 38px "Thmanyah Sans", sans-serif';
+      ctx.fillText(`الدرجة: ${Number(sub.score)} / ${Number(sub.total_points)}  ·  النسبة: ${Number(sub.percentage)}%`, 700, 634);
 
       const dateStr = new Date(sub.submitted_at || Date.now()).toLocaleDateString('ar-EG', {
         year: 'numeric',
@@ -2038,11 +2038,11 @@ export function registerStudentMethods(proto) {
         day: 'numeric'
       });
       ctx.fillStyle = '#a9c2b5';
-      ctx.font = '24px Cairo, sans-serif';
+      ctx.font = '400 24px "Thmanyah Sans", sans-serif';
       ctx.fillText(`تاريخ الإصدار: ${dateStr}`, 330, 825);
 
       ctx.fillStyle = '#e5c687';
-      ctx.font = 'bold 28px Amiri, serif';
+      ctx.font = '700 28px "Thmanyah Serif Text", "Thmanyah Sans", serif';
       ctx.fillText(`توقيع المعلم: ${this.publicSettings?.teacher_name || 'الأستاذ محمد عبد الله'}`, 1030, 825);
 
       return new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));

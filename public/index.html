@@ -17,30 +17,55 @@
   <link rel="icon" type="image/png" href="/assets/favicon.png" />
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#0a3c2a" />
-  <link rel="stylesheet" href="/styles.css?v=4.1.0" />
+  <link rel="stylesheet" href="/vendor/thmanyah/thmanyah.css" />
+  <link rel="stylesheet" href="/styles.css?v=5.0.0" />
 </head>
 <body>
 
-  <!-- Top Moving Promotional Marquee -->
+  <!-- Top Promotional Marquee (Non-sticky on mobile to preserve viewport height) -->
   <div class="top-ribbon" role="region" aria-label="شريط إعلاني">
     <div class="marquee-track">
       <div class="marquee-group">
-        <span class="marquee-item">✨ <span id="topBannerText">منصة مَتْن (MATN) — بإشراف فضيلة الشيخ محمد عبد الله للمواد الشرعية</span></span>
-        <span class="marquee-sep">•</span>
-        <span class="marquee-item">📚 شرح مبسّط للمرحلتين الإعدادية والثانوية الأزهرية</span>
-        <span class="marquee-sep">•</span>
-        <span class="marquee-item">📝 امتحانات إلكترونية وتصحيح فوري وبنك أخطاء ذكي</span>
-        <span class="marquee-sep">•</span>
-        <span class="marquee-item">📲 تقارير متابعة تلقائية لولي الأمر كل جمعة</span>
+        <span class="marquee-item">
+          <svg class="matn-svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>
+          <span id="topBannerText">منصة مَتْن (MATN) — بإشراف فضيلة الأستاذ محمد عبد الله للمواد الشرعية</span>
+        </span>
+        <span class="marquee-sep" aria-hidden="true">·</span>
+        <span class="marquee-item">
+          <svg class="matn-svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          <span>شرح مبسّط للمرحلتين الإعدادية والثانوية الأزهرية</span>
+        </span>
+        <span class="marquee-sep" aria-hidden="true">·</span>
+        <span class="marquee-item">
+          <svg class="matn-svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+          <span>امتحانات إلكترونية وتصحيح فوري وبنك أخطاء ذكي</span>
+        </span>
+        <span class="marquee-sep" aria-hidden="true">·</span>
+        <span class="marquee-item">
+          <svg class="matn-svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+          <span>تقارير متابعة تلقائية لولي الأمر كل جمعة</span>
+        </span>
       </div>
       <div class="marquee-group" aria-hidden="true">
-        <span class="marquee-item">✨ منصة مَتْن (MATN) — بإشراف فضيلة الشيخ محمد عبد الله للمواد الشرعية</span>
-        <span class="marquee-sep">•</span>
-        <span class="marquee-item">📚 شرح مبسّط للمرحلتين الإعدادية والثانوية الأزهرية</span>
-        <span class="marquee-sep">•</span>
-        <span class="marquee-item">📝 امتحانات إلكترونية وتصحيح فوري وبنك أخطاء ذكي</span>
-        <span class="marquee-sep">•</span>
-        <span class="marquee-item">📲 تقارير متابعة تلقائية لولي الأمر كل جمعة</span>
+        <span class="marquee-item">
+          <svg class="matn-svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>
+          <span>منصة مَتْن (MATN) — بإشراف فضيلة الأستاذ محمد عبد الله للمواد الشرعية</span>
+        </span>
+        <span class="marquee-sep">·</span>
+        <span class="marquee-item">
+          <svg class="matn-svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          <span>شرح مبسّط للمرحلتين الإعدادية والثانوية الأزهرية</span>
+        </span>
+        <span class="marquee-sep">·</span>
+        <span class="marquee-item">
+          <svg class="matn-svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+          <span>امتحانات إلكترونية وتصحيح فوري وبنك أخطاء ذكي</span>
+        </span>
+        <span class="marquee-sep">·</span>
+        <span class="marquee-item">
+          <svg class="matn-svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+          <span>تقارير متابعة تلقائية لولي الأمر كل جمعة</span>
+        </span>
       </div>
     </div>
     <span id="topSupportWaWrap" style="display:none;"><a id="topSupportWaLink" href="#"></a></span>
@@ -48,13 +73,13 @@
 
   <!-- Navigation Bar -->
   <header class="navbar">
-    <div class="brand-wrap" data-click="navigateHome">
+    <button type="button" class="brand-wrap" data-click="navigateHome" aria-label="العودة للرئيسية">
       <img src="/assets/logo.png" alt="شعار منصة متن" class="brand-logo" />
       <div class="brand-titles">
-        <h1 id="navPlatformTitle">منصة مَتْن • MATN</h1>
+        <h1 id="navPlatformTitle">منصة مَتْن · MATN</h1>
         <p id="navTeacherName">الأستاذ محمد عبد الله للمواد الشرعية</p>
       </div>
-    </div>
+    </button>
 
     <div class="nav-actions" id="navActions">
       <!-- Populated dynamically by /js/main.js -->
@@ -65,14 +90,14 @@
   <main id="appRoot"></main>
 
   <!-- Global Modal Backdrop -->
-  <div class="modal-backdrop" id="globalModal">
+  <div class="modal-backdrop" id="globalModal" role="dialog" aria-modal="true">
     <div class="modal-box" id="globalModalContent"></div>
   </div>
 
   <!-- Toast Notification Container -->
-  <div id="toastContainer" style="position:fixed; top:85px; left:24px; z-index:300; display:flex; flex-direction:column; gap:10px; max-width:390px;"></div>
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
 
   <script src="/vendor/pdfjs/pdf.min.js"></script>
-  <script type="module" src="/js/main.js?v=4.1.0"></script>
+  <script type="module" src="/js/main.js?v=5.0.0"></script>
 </body>
 </html>

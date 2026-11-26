@@ -348,7 +348,7 @@ async function handleAssessmentRoutes(req, res, ctx) {
     if (user.role === 'student') await recordStudyActivity(db, user.id);
 
     if (user.parent_phone && ['exam', 'retake_exam'].includes(assessment.assessment_type)) {
-      const statusLabel = passed ? 'ناجح ومجتاز ✅' : (timedOut ? 'انتهى الوقت (صفر) ⚠️' : 'راسب (يحتاج دخول امتحان الإعادة) ⚠️');
+      const statusLabel = passed ? 'ناجح ومجتاز' : (timedOut ? 'انتهى الوقت (صفر)' : 'راسب (يحتاج دخول امتحان الإعادة)');
       const msg = `منصة مَتْن - نتيجة الطالب (${user.full_name}) في (${assessment.title}): ${score}/${totalPoints} (${percentage}%) - ${statusLabel}`;
       await dispatchWhatsApp(user.parent_phone, user.full_name, 'exam_result', msg, `إشعار نتيجة اختبار (${percentage}%)`);
     }
@@ -369,10 +369,10 @@ async function handleAssessmentRoutes(req, res, ctx) {
       review_available_at: revealReview ? null : assessment.scheduled_end,
       ...(revealReview ? { detailed_review: detailedReview } : {}),
       message: timedOut
-        ? '⏰ انتهى الوقت المحدد للامتحان وتم تسجيل المحاولة بدرجة صفر.'
+        ? 'انتهى الوقت المحدد للامتحان وتم تسجيل المحاولة بدرجة صفر.'
         : (passed
-          ? `🎉 أحسنت! حصلت على ${score} من ${totalPoints} (فوق النصف) وتم فتح خطوة التقدم التالية.`
-          : `⚠️ حصلت على ${score} من ${totalPoints} (النجاح يتطلب ${Math.floor(totalPoints / 2) + 1} درجات على الأقل).`)
+          ? `أحسنت! حصلت على ${score} من ${totalPoints} (فوق النصف) وتم فتح خطوة التقدم التالية.`
+          : `حصلت على ${score} من ${totalPoints} (النجاح يتطلب ${Math.floor(totalPoints / 2) + 1} درجات على الأقل).`)
     });
     return true;
   }

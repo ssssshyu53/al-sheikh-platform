@@ -173,7 +173,7 @@ async function handleLiveRoutes(req, res, ctx) {
     );
 
     await createNotification(db, {
-      title: `🔴 حصة مباشرة جديدة: ${title}`,
+      title: `حصة مباشرة جديدة: ${title}`,
       body: `موعد البث: ${new Date(startMs).toLocaleString('ar-EG', { timeZone: 'Africa/Cairo' })} — المدة: ${durationMinutes} دقيقة.`,
       notifType: 'live_session',
       targetGrade: grade,

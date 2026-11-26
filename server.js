@@ -185,11 +185,18 @@ const server = http.createServer(async (req, res) => {
         '.jpeg': 'image/jpeg',
         '.svg': 'image/svg+xml',
         '.ico': 'image/x-icon',
+        '.woff2': 'font/woff2',
+        '.woff': 'font/woff',
+        '.ttf': 'font/ttf',
+        '.otf': 'font/otf',
         '.mp4': 'video/mp4',
         '.webm': 'video/webm'
       };
       const mimeType = mimeTypes[ext] || 'application/octet-stream';
-      const cacheControl = (ext === '.png' || ext === '.jpg' || ext === '.mp4' || ext === '.webm') ? 'public, max-age=3600' : 'no-cache';
+      const isFont = ext === '.woff2' || ext === '.woff' || ext === '.ttf' || ext === '.otf';
+      const cacheControl = isFont
+        ? 'public, max-age=31536000, immutable'
+        : ((ext === '.png' || ext === '.jpg' || ext === '.mp4' || ext === '.webm') ? 'public, max-age=3600' : 'no-cache');
       if (ext === '.mp4' || ext === '.webm') {
         streamFileWithRange(req, res, fullPath, stat.size, mimeType, cacheControl);
       } else {

@@ -41,6 +41,8 @@ class MatnPlatformApp {
       azhar_exam_date: '',
       announcement_banner: ''
     };
+    this.publicStats = { studentsCount: 0, lessonsCount: 0, examsCount: 0 };
+    this.demoAccounts = null;
     this.registrationMode = 'voucher_code';
     this.currentView = 'landing';
     this.studentTab = 'curriculum';
@@ -217,6 +219,8 @@ class MatnPlatformApp {
         case 'closeModal': return this.closeModal();
         case 'openLoginModal': return this.openLoginModal();
         case 'openRegisterModal': return this.openRegisterModal();
+        case 'demoLogin': return this.demoLogin(arg || 'student', target);
+        case 'fillDemoLogin': return this.fillDemoLogin(arg || 'student');
         case 'toggleRequestCodePanel': return this.toggleRequestCodePanel();
         case 'requestActivationCodeViaWhatsapp': return this.requestActivationCodeViaWhatsapp();
         case 'openForgotPasswordModal': return this.openForgotPasswordModal();
@@ -441,7 +445,10 @@ class MatnPlatformApp {
     const bannerEl = document.getElementById('topBannerText');
     if (bannerEl && s.announcement_banner) bannerEl.textContent = s.announcement_banner;
     const navTitle = document.getElementById('navPlatformTitle');
-    if (navTitle && s.platform_name) navTitle.textContent = s.platform_name;
+    if (navTitle && s.platform_name) {
+      const shortBrand = s.platform_name.split('(')[0].trim() || 'منصة مَتْن';
+      navTitle.innerHTML = `<span class="nav-title-full">${this.esc(s.platform_name)}</span><span class="nav-title-short">${this.esc(shortBrand)}</span>`;
+    }
     const navTeacher = document.getElementById('navTeacherName');
     if (navTeacher && s.teacher_name) navTeacher.textContent = s.teacher_name;
 
@@ -645,6 +652,7 @@ class MatnPlatformApp {
     content.style.maxWidth = maxWidth;
     content.innerHTML = html;
     modal.classList.add('open');
+    document.body.classList.add('modal-open');
   }
 
   closeModal() {
@@ -652,6 +660,7 @@ class MatnPlatformApp {
     const content = document.getElementById('globalModalContent');
     this.destroyMediaInside(content);
     modal.classList.remove('open');
+    document.body.classList.remove('modal-open');
     if (content) {
       content.style.maxWidth = '560px';
       content.innerHTML = '';
@@ -695,19 +704,23 @@ class MatnPlatformApp {
         this.publicSettings = { ...this.publicSettings, ...pub.settings };
         this.syncPublicBrandingElements();
       }
+      if (pub && pub.stats) this.publicStats = pub.stats;
+      if (pub && pub.demo_accounts) this.demoAccounts = pub.demo_accounts;
       if (pub && pub.registration_mode) this.registrationMode = pub.registration_mode;
     } catch {}
 
-    try {
-      const res = await this.api('/api/auth/me');
-      this.user = res.user;
-      this.renderNavbar();
-      if (this.user.role === 'admin') await this.loadAdminDashboard(false);
-      else await this.loadStudentPortal(false);
-      if (window.location.hash) this.applyHashRoute();
-      return;
-    } catch {
-      this.user = null;
+    if (this.csrfToken || this.getCookie('matn_csrf_token')) {
+      try {
+        const res = await this.api('/api/auth/me');
+        this.user = res.user;
+        this.renderNavbar();
+        if (this.user.role === 'admin') await this.loadAdminDashboard(false);
+        else await this.loadStudentPortal(false);
+        if (window.location.hash) this.applyHashRoute();
+        return;
+      } catch {
+        this.user = null;
+      }
     }
 
     this.renderNavbar();

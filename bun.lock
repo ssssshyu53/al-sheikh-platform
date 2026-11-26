@@ -5,12 +5,15 @@
     "": {
       "name": "matn-al-sheikh-platform",
       "dependencies": {
+        "@dawod/thmanyah-font-web": "^1.2.0",
         "mysql2": "^3.11.0",
         "pdfjs-dist": "3.11.174",
       },
     },
   },
   "packages": {
+    "@dawod/thmanyah-font-web": ["@dawod/thmanyah-font-web@1.2.0", "", {}, "sha512-a9HcdkmrvYs0OX+Y3KjShLGoe5LNqzoGygUFcFAD2TkEgdcn+Z8BlNXUMKZ8z7m7L8URJzOAczaRwaGzV1iSRA=="],
+
     "@mapbox/node-pre-gyp": ["@mapbox/node-pre-gyp@1.0.11", "", { "dependencies": { "detect-libc": "^2.0.0", "https-proxy-agent": "^5.0.0", "make-dir": "^3.1.0", "node-fetch": "^2.6.7", "nopt": "^5.0.0", "npmlog": "^5.0.1", "rimraf": "^3.0.2", "semver": "^7.3.5", "tar": "^6.1.11" }, "bin": { "node-pre-gyp": "bin/node-pre-gyp" } }, "sha512-Yhlar6v9WQgUp/He7BdgzOz8lqMQ8sU+jkCq7Wx8Myc5YFJLbEe7lgui/V7G1qB1DJykHSGwreceSaD60Y0PUQ=="],
 
     "@types/node": ["@types/node@26.6.11", "", { "dependencies": { "undici-types": "~8.9.0" } }, "sha512-uUyQ2XLEz+EXh34lmS3GhKrkqn/8FU7KUiKRpk347At2bmnMVWss45yz8b4FG/tUtmV1tV/+TVkITItPROyeeQ=="],
