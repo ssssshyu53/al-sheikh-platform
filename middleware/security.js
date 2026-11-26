@@ -119,12 +119,17 @@ function getSecurityHeaders(req, extraHeaders = {}) {
     }
   }
 
+  const allowPreviewFrame = !IS_PROD || Boolean(process.env.APPLET_ID);
+  const frameAncestors = allowPreviewFrame
+    ? "'self' https://aistudio.google.com https://*.google.com https://*.googleusercontent.com https://*.run.app"
+    : "'self'";
+
   return {
     'X-Content-Type-Options': 'nosniff',
-    'X-Frame-Options': 'SAMEORIGIN',
+    ...(allowPreviewFrame ? {} : { 'X-Frame-Options': 'SAMEORIGIN' }),
     'Referrer-Policy': 'no-referrer',
     'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
-    'Content-Security-Policy': "default-src 'self'; script-src 'self'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' https://iframe.mediadelivery.net; connect-src 'self'; frame-ancestors 'self';",
+    'Content-Security-Policy': `default-src 'self'; script-src 'self'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' https://iframe.mediadelivery.net; connect-src 'self'; frame-ancestors ${frameAncestors};`,
     ...(IS_PROD ? { 'Strict-Transport-Security': 'max-age=31536000; includeSubDomains' } : {}),
     ...(corsOrigin ? {
       'Access-Control-Allow-Origin': corsOrigin,

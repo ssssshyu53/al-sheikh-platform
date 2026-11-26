@@ -7,11 +7,14 @@
     "node": ">=20.0.0"
   },
   "dependencies": {
-    "mysql2": "^3.11.0"
+    "mysql2": "^3.11.0",
+    "pdfjs-dist": "3.11.174"
   },
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js",
+    "dev": "PORT=3000 NODE_ENV=development DB_CLIENT=sqlite node server.js",
+    "build": "node -e \"const fs=require('fs'),p=require('path');fs.mkdirSync('public/vendor/pdfjs',{recursive:true});for(const f of['pdf.min.js','pdf.worker.min.js']){const s=p.join('node_modules/pdfjs-dist/build',f);if(fs.existsSync(s))fs.copyFileSync(s,p.join('public/vendor/pdfjs',f));}\" && node --check server.js && node --check database.js && node --check db/adapter.js && node --check db/migrations.js",
+    "lint": "node --check server.js && node --check database.js && node --check db/adapter.js && node --check db/migrations.js && node --check lib/constants.js && node --check middleware/security.js",
     "setup:env": "node scripts/setup-env.js",
     "setup:admin": "node scripts/setup-admin.js",
     "seed:dev": "node scripts/seed-dev.js",

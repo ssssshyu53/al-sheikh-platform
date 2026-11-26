@@ -4,9 +4,44 @@ const { createDatabaseConnection } = require('./db/adapter');
 const { runMigrations } = require('./db/migrations');
 
 const scryptAsync = promisify(crypto.scrypt);
-const db = createDatabaseConnection();
+let activeDb = createDatabaseConnection();
+
+const db = {
+  get client() { return activeDb.client; },
+  get isMysql() { return activeDb.isMysql; },
+  get poolConfig() { return activeDb.poolConfig; },
+  forUpdate: () => activeDb.forUpdate(),
+  insertIgnorePrefix: () => activeDb.insertIgnorePrefix(),
+  get: (sql, params) => activeDb.get(sql, params),
+  all: (sql, params) => activeDb.all(sql, params),
+  run: (sql, params) => activeDb.run(sql, params),
+  exec: (sql) => activeDb.exec(sql),
+  transaction: (fn) => activeDb.transaction(fn),
+  close: () => activeDb.close()
+};
 
 let initPromise = null;
+
+function isConnectionRefusedError(err) {
+  if (!err) return false;
+  const code = String(err.code || err.cause?.code || '');
+  const msg = String(err.message || '');
+  if (code === 'ECONNREFUSED' || code === 'ENOENT' || msg.includes('ECONNREFUSED')) return true;
+  if (Array.isArray(err.errors)) {
+    return err.errors.some((sub) => isConnectionRefusedError(sub));
+  }
+  return false;
+}
+
+function canFallbackToSqlite() {
+  if (process.env.DB_HOST && process.env.DB_HOST.trim()) return false;
+  try {
+    require('node:sqlite');
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 async function bootstrapInitialAdmin() {
   if (process.env.INITIAL_ADMIN_PHONE && process.env.INITIAL_ADMIN_PASSWORD) {
@@ -49,7 +84,18 @@ async function bootstrapInitialAdmin() {
 function initDatabase() {
   if (!initPromise) {
     initPromise = (async () => {
-      await runMigrations(db);
+      try {
+        await runMigrations(db);
+      } catch (err) {
+        if (activeDb.isMysql && isConnectionRefusedError(err) && canFallbackToSqlite()) {
+          console.warn('WARNING: MySQL is unreachable at default 127.0.0.1:3306 and DB_HOST is not set. Falling back to built-in SQLite (node:sqlite).');
+          await activeDb.close().catch(() => {});
+          activeDb = createDatabaseConnection(undefined, { client: 'sqlite' });
+          await runMigrations(db);
+        } else {
+          throw err;
+        }
+      }
       await bootstrapInitialAdmin();
       return db;
     })().catch((err) => {
