@@ -1,21 +1,15 @@
 const { loadEnvFile } = require('./lib/env');
 loadEnvFile();
 
-const { resolveDbClient } = require('./db/adapter');
-const [nodeMajor, nodeMinor] = process.versions.node.split('.').map(Number);
+const { resolveDbClient, hasAnySqlite } = require('./db/adapter');
+const [nodeMajor] = process.versions.node.split('.').map(Number);
 if (nodeMajor < 20) {
   console.error(`FATAL ERROR: Node.js >= 20.0.0 is required (current: v${process.versions.node}).`);
   process.exit(1);
 }
 if (resolveDbClient() === 'sqlite') {
-  if (nodeMajor < 22 || (nodeMajor === 22 && nodeMinor < 13)) {
-    console.error(`FATAL ERROR: Node.js >= 22.13.0 is required for DB_CLIENT=sqlite (current: v${process.versions.node}). Set DB_CLIENT=mysql for Node 20+.`);
-    process.exit(1);
-  }
-  try {
-    require('node:sqlite');
-  } catch {
-    console.error('FATAL ERROR: Built-in module node:sqlite is not available in this Node.js runtime.');
+  if (!hasAnySqlite()) {
+    console.error(`FATAL ERROR: No SQLite driver available (Node v${process.versions.node}). Install sql.js, use Node >= 22.13, or set DB_CLIENT=mysql.`);
     process.exit(1);
   }
 }
@@ -258,6 +252,11 @@ if (require.main === module) {
   });
   process.on('SIGTERM', () => gracefulShutdown('SIGTERM', 0));
   process.on('SIGINT', () => gracefulShutdown('SIGINT', 0));
+
+  server.on('error', (err) => {
+    console.error('FATAL ERROR: HTTP server failed:', err);
+    process.exit(1);
+  });
 
   initDatabase()
     .then(() => {

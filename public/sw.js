@@ -1,11 +1,11 @@
-const CACHE_NAME = 'matn-shell-v5.2.0';
+const CACHE_NAME = 'matn-shell-v5.5.0';
 const APP_SHELL_ASSETS = [
   '/',
   '/index.html',
   '/vendor/thmanyah/thmanyah.css',
-  '/styles.css?v=5.2.0',
+  '/styles.css?v=5.5.0',
   '/manifest.json',
-  '/js/main.js?v=5.2.0',
+  '/js/main.js?v=5.5.0',
   '/js/constants.js',
   '/js/icons.js',
   '/js/utils.js',

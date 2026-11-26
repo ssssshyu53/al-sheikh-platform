@@ -1,11 +1,20 @@
 const crypto = require('node:crypto');
 const { promisify } = require('node:util');
-const { createDatabaseConnection } = require('./db/adapter');
+const { createDatabaseConnection, hasAnySqlite } = require('./db/adapter');
 const { runMigrations } = require('./db/migrations');
-const { seedDemoData } = require('./lib/demo-seed');
+const { isManagedCloudRuntime } = require('./lib/paths');
 
 const scryptAsync = promisify(crypto.scrypt);
-let activeDb = createDatabaseConnection();
+
+function shouldStartWithSqliteInManagedCloud() {
+  const explicitClient = String(process.env.DB_CLIENT || '').trim();
+  const explicitHost = String(process.env.DB_HOST || '').trim();
+  return !explicitClient && !explicitHost && isManagedCloudRuntime() && hasAnySqlite();
+}
+
+let activeDb = shouldStartWithSqliteInManagedCloud()
+  ? createDatabaseConnection(undefined, { client: 'sqlite' })
+  : createDatabaseConnection();
 
 const db = {
   get client() { return activeDb.client; },
@@ -23,11 +32,25 @@ const db = {
 
 let initPromise = null;
 
+const MYSQL_UNAVAILABLE_CODES = new Set([
+  'ECONNREFUSED',
+  'ENOENT',
+  'ETIMEDOUT',
+  'EHOSTUNREACH',
+  'ENETUNREACH',
+  'ECONNRESET',
+  'EADDRNOTAVAIL',
+  'ENOTFOUND',
+  'EPERM',
+  'EACCES',
+  'PROTOCOL_CONNECTION_LOST'
+]);
+
 function isConnectionRefusedError(err) {
   if (!err) return false;
   const code = String(err.code || err.cause?.code || '');
   const msg = String(err.message || '');
-  if (code === 'ECONNREFUSED' || code === 'ENOENT' || msg.includes('ECONNREFUSED')) return true;
+  if (MYSQL_UNAVAILABLE_CODES.has(code) || msg.includes('ECONNREFUSED') || msg.includes('ETIMEDOUT')) return true;
   if (Array.isArray(err.errors)) {
     return err.errors.some((sub) => isConnectionRefusedError(sub));
   }
@@ -36,12 +59,7 @@ function isConnectionRefusedError(err) {
 
 function canFallbackToSqlite() {
   if (process.env.DB_HOST && process.env.DB_HOST.trim()) return false;
-  try {
-    require('node:sqlite');
-    return true;
-  } catch {
-    return false;
-  }
+  return hasAnySqlite();
 }
 
 async function bootstrapInitialAdmin() {
@@ -89,7 +107,7 @@ function initDatabase() {
         await runMigrations(db);
       } catch (err) {
         if (activeDb.isMysql && isConnectionRefusedError(err) && canFallbackToSqlite()) {
-          console.warn('WARNING: MySQL is unreachable at default 127.0.0.1:3306 and DB_HOST is not set. Falling back to built-in SQLite (node:sqlite).');
+          console.warn('WARNING: MySQL is unreachable at default 127.0.0.1:3306 and DB_HOST is not set. Falling back to SQLite.');
           await activeDb.close().catch(() => {});
           activeDb = createDatabaseConnection(undefined, { client: 'sqlite' });
           await runMigrations(db);
@@ -98,7 +116,6 @@ function initDatabase() {
         }
       }
       await bootstrapInitialAdmin();
-      await seedDemoData(db, hashPasswordAsync);
       return db;
     })().catch((err) => {
       initPromise = null;

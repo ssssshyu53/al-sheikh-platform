@@ -76,40 +76,6 @@ export function registerAuthMethods(proto) {
       `;
     },
 
-    renderDemoQuickAccessPanel(compact = false) {
-      if (!this.demoAccounts) return '';
-      const { student, admin } = this.demoAccounts;
-      return `
-        <div class="demo-access-panel ${compact ? 'is-compact' : ''}">
-          <div class="demo-access-head">
-            <span class="demo-access-title">
-              ${this.icon('zap', 15)}
-              <span>حسابات التجربة الفورية</span>
-            </span>
-            <span class="demo-access-hint">دخول مباشر بضغطة واحدة لتجربة كافة المزايا</span>
-          </div>
-          <div class="demo-access-grid">
-            <button type="button" class="demo-account-btn demo-student-btn" data-click="demoLogin" data-arg="student">
-              <span class="demo-btn-icon">${this.icon('graduation-cap', 18)}</span>
-              <span class="demo-btn-text">
-                <strong>دخول كطالب تجريبي</strong>
-                <small dir="ltr">${this.esc(student.phone)} · ${this.esc(student.password)}</small>
-              </span>
-              <span class="demo-btn-arrow">${this.icon('arrow-left', 15)}</span>
-            </button>
-            <button type="button" class="demo-account-btn demo-admin-btn" data-click="demoLogin" data-arg="admin">
-              <span class="demo-btn-icon">${this.icon('crown', 18)}</span>
-              <span class="demo-btn-text">
-                <strong>دخول كأدمن تجريبي</strong>
-                <small dir="ltr">${this.esc(admin.phone)} · ${this.esc(admin.password)}</small>
-              </span>
-              <span class="demo-btn-arrow">${this.icon('arrow-left', 15)}</span>
-            </button>
-          </div>
-        </div>
-      `;
-    },
-
     renderLanding() {
       this.currentView = 'landing';
       this.renderNavbar();
@@ -166,8 +132,6 @@ export function registerAuthMethods(proto) {
                   </div>
                 </div>
               ` : ''}
-
-              ${this.renderDemoQuickAccessPanel(false)}
             </div>
 
             <div class="hero-logo-showcase">
@@ -337,8 +301,6 @@ export function registerAuthMethods(proto) {
                 <p class="auth-page-subtitle">أدخل رقم الهاتف وكلمة المرور للوصول إلى محاضراتك واختباراتك.</p>
               </div>
 
-              ${this.renderDemoQuickAccessPanel(true)}
-
               <form data-submit="handleLogin" class="auth-form">
                 <div class="form-group">
                   <label for="loginPhone">رقم الهاتف</label>
@@ -473,7 +435,7 @@ export function registerAuthMethods(proto) {
                   ${!isOtpMode ? `
                     <div class="form-group">
                       <label for="regActivationCode">كود التفعيل ${isVoucherMode ? '*' : '(اختياري)'}</label>
-                      <input type="text" id="regActivationCode" class="form-control" placeholder="MATN-DEMO-30D-001" style="text-align:center; font-weight:700; letter-spacing:1px;" ${isVoucherMode ? 'required' : ''} />
+                      <input type="text" id="regActivationCode" class="form-control" placeholder="MATN-XXXX-XXXX" style="text-align:center; font-weight:700; letter-spacing:1px;" ${isVoucherMode ? 'required' : ''} />
                     </div>
                   ` : ''}
                 </div>
@@ -526,12 +488,6 @@ export function registerAuthMethods(proto) {
                   <li>${this.icon('book-open', 16)} <span>تنظيم تلقائي للمواد حسب صفك وشعبتك</span></li>
                   <li>${this.icon('trophy', 16)} <span>لوحة شرف وشارات إنجاز وشهادات تفوق</span></li>
                 </ul>
-                ${this.demoAccounts ? `
-                  <button type="button" class="btn btn-outline-gold btn-sm auth-guide-btn" data-click="demoLogin" data-arg="student">
-                    ${this.icon('zap', 14)}
-                    <span>أو جرّب المنصة فوراً كطالب تجريبي</span>
-                  </button>
-                ` : ''}
               </div>
             </aside>
           </div>
@@ -618,47 +574,6 @@ export function registerAuthMethods(proto) {
           <video id="modalGuideVideo" src="/assets/matn_guide_video.mp4" controls autoplay playsinline style="width:100%; display:block; max-height:68vh;"></video>
         </div>
       `, '820px');
-    },
-
-    fillDemoLogin(role = 'student') {
-      const acc = this.demoAccounts?.[role];
-      if (!acc) return;
-      const phoneEl = document.getElementById('loginPhone');
-      const passEl = document.getElementById('loginPassword');
-      if (phoneEl) phoneEl.value = acc.phone;
-      if (passEl) passEl.value = acc.password;
-    },
-
-    async demoLogin(role = 'student', triggerBtn = null) {
-      const acc = this.demoAccounts?.[role];
-      if (!acc) {
-        this.showToast('الحسابات التجريبية غير متاحة في وضع التشغيل الحالي.', 'warning');
-        return;
-      }
-      if (triggerBtn) triggerBtn.disabled = true;
-      try {
-        const res = await this.api('/api/auth/login', {
-          method: 'POST',
-          body: JSON.stringify({ phone: acc.phone, password: acc.password })
-        });
-        this.setAuthSession(res.token, res.csrf_token);
-        this.user = res.user;
-        this.closeModal();
-        this.renderNavbar();
-        this.showToast(res.message || 'تم تسجيل الدخول بالحساب التجريبي بنجاح.', 'success');
-
-        if (this.user.role === 'admin') {
-          this.setHashRoute('/admin');
-          await this.loadAdminDashboard(false);
-        } else {
-          this.setHashRoute('/dashboard');
-          await this.loadStudentPortal(false);
-        }
-      } catch (err) {
-        this.showToast(err.message || 'تعذر تسجيل الدخول بالحساب التجريبي.', 'danger');
-      } finally {
-        if (triggerBtn) triggerBtn.disabled = false;
-      }
     },
 
     async handleForgotPassword(e) {
@@ -976,7 +891,7 @@ export function registerAuthMethods(proto) {
         <form data-submit="handleRedeemVoucher">
           <div class="form-group">
             <label for="modalVoucherCodeInput">أدخل كود كارت الشحن</label>
-            <input type="text" name="voucher_code" id="modalVoucherCodeInput" class="form-control" placeholder="MATN-DEMO-30D-001" style="text-align:center; font-size:1.15rem; font-weight:700; letter-spacing:1.5px;" required />
+            <input type="text" name="voucher_code" id="modalVoucherCodeInput" class="form-control" placeholder="MATN-XXXX-XXXX" style="text-align:center; font-size:1.15rem; font-weight:700; letter-spacing:1.5px;" required />
           </div>
           <button type="submit" class="btn btn-gold btn-block">${this.icon('zap', 16)} <span>تفعيل اشتراك ٣٠ يوماً الآن</span></button>
         </form>

@@ -1,12 +1,34 @@
 const path = require('node:path');
 const fs = require('node:fs');
-const { resolveSqliteDbPath } = require('../lib/paths');
+const { resolveSqliteDbPath, getFallbackStorageRoot } = require('../lib/paths');
 
 function resolveDbClient() {
   const explicit = String(process.env.DB_CLIENT || '').trim().toLowerCase();
   if (explicit) return explicit;
   const nodeEnv = String(process.env.NODE_ENV || '').trim().toLowerCase();
   return nodeEnv === 'production' ? 'mysql' : 'sqlite';
+}
+
+function hasNativeSqlite() {
+  try {
+    require('node:sqlite');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function hasSqlJs() {
+  try {
+    require.resolve('sql.js');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function hasAnySqlite() {
+  return hasNativeSqlite() || hasSqlJs();
 }
 
 function normalizeParam(value) {
@@ -226,10 +248,199 @@ function createSqliteExecutor(sqliteDb) {
   };
 }
 
+function openNativeSqliteWithFallback(resolvedPath, allowFallback) {
+  const { DatabaseSync } = require('node:sqlite');
+  const candidates = [resolvedPath];
+  if (allowFallback && resolvedPath !== ':memory:') {
+    const tmpCandidate = path.join(getFallbackStorageRoot(), 'matn_platform.db');
+    if (path.resolve(tmpCandidate) !== path.resolve(resolvedPath)) {
+      candidates.push(tmpCandidate);
+    }
+    candidates.push(':memory:');
+  }
+
+  let lastErr = null;
+  for (const candidate of candidates) {
+    let instance = null;
+    try {
+      if (candidate !== ':memory:') {
+        fs.mkdirSync(path.dirname(path.resolve(candidate)), { recursive: true });
+      }
+      instance = new DatabaseSync(candidate);
+      instance.exec(`
+        PRAGMA journal_mode = WAL;
+        PRAGMA synchronous = NORMAL;
+        PRAGMA busy_timeout = 5000;
+        PRAGMA cache_size = -64000;
+        PRAGMA temp_store = MEMORY;
+        PRAGMA foreign_keys = ON;
+      `);
+      return instance;
+    } catch (err) {
+      lastErr = err;
+      try { if (instance) instance.close(); } catch {}
+    }
+  }
+  throw lastErr;
+}
+
+let sqlJsModulePromise = null;
+function loadSqlJsModule() {
+  if (!sqlJsModulePromise) {
+    const initSqlJs = require('sql.js');
+    sqlJsModulePromise = initSqlJs().catch((err) => {
+      sqlJsModulePromise = null;
+      throw err;
+    });
+  }
+  return sqlJsModulePromise;
+}
+
+function createSqlJsConnection(resolvedPath) {
+  let wasmDbPromise = null;
+  let persistDisabled = resolvedPath === ':memory:';
+  let inTransaction = false;
+
+  async function ensureDb() {
+    if (!wasmDbPromise) {
+      wasmDbPromise = (async () => {
+        const SQL = await loadSqlJsModule();
+        let data = null;
+        if (!persistDisabled && fs.existsSync(resolvedPath)) {
+          try {
+            data = new Uint8Array(fs.readFileSync(resolvedPath));
+          } catch {}
+        }
+        const instance = data ? new SQL.Database(data) : new SQL.Database();
+        instance.run('PRAGMA foreign_keys = ON;');
+        return instance;
+      })().catch((err) => {
+        wasmDbPromise = null;
+        throw err;
+      });
+    }
+    return wasmDbPromise;
+  }
+
+  function persistToDisk(instance) {
+    if (persistDisabled || inTransaction) return;
+    try {
+      fs.mkdirSync(path.dirname(path.resolve(resolvedPath)), { recursive: true });
+      const exported = Buffer.from(instance.export());
+      const tmpFile = `${resolvedPath}.tmp.${process.pid}`;
+      fs.writeFileSync(tmpFile, exported);
+      fs.renameSync(tmpFile, resolvedPath);
+    } catch {
+      persistDisabled = true;
+    }
+  }
+
+  const base = {
+    client: 'sqlite',
+    isMysql: false,
+    forUpdate: () => '',
+    insertIgnorePrefix: () => 'INSERT OR IGNORE INTO',
+    async get(sql, params = []) {
+      const instance = await ensureDb();
+      const stmt = instance.prepare(sql);
+      try {
+        const normalized = normalizeParams(params);
+        if (normalized.length > 0) stmt.bind(normalized);
+        return stmt.step() ? stmt.getAsObject() : undefined;
+      } finally {
+        stmt.free();
+      }
+    },
+    async all(sql, params = []) {
+      const instance = await ensureDb();
+      const stmt = instance.prepare(sql);
+      const rows = [];
+      try {
+        const normalized = normalizeParams(params);
+        if (normalized.length > 0) stmt.bind(normalized);
+        while (stmt.step()) {
+          rows.push(stmt.getAsObject());
+        }
+        return rows;
+      } finally {
+        stmt.free();
+      }
+    },
+    async run(sql, params = []) {
+      const instance = await ensureDb();
+      const stmt = instance.prepare(sql);
+      try {
+        const normalized = normalizeParams(params);
+        if (normalized.length > 0) stmt.bind(normalized);
+        stmt.step();
+      } finally {
+        stmt.free();
+      }
+      const changes = Number(instance.getRowsModified() || 0);
+      let lastInsertRowid = 0;
+      const ridStmt = instance.prepare('SELECT last_insert_rowid() AS id');
+      try {
+        if (ridStmt.step()) {
+          lastInsertRowid = ridStmt.getAsObject().id ?? 0;
+        }
+      } finally {
+        ridStmt.free();
+      }
+      persistToDisk(instance);
+      return { changes, lastInsertRowid };
+    },
+    async exec(sql) {
+      const instance = await ensureDb();
+      instance.exec(sql);
+      persistToDisk(instance);
+    }
+  };
+
+  let txLock = Promise.resolve();
+
+  return {
+    ...base,
+    async transaction(fn) {
+      let release;
+      const prev = txLock;
+      txLock = new Promise((resolve) => {
+        release = resolve;
+      });
+      await prev;
+      const instance = await ensureDb();
+      inTransaction = true;
+      try {
+        instance.exec('BEGIN IMMEDIATE');
+        const result = await fn(base);
+        instance.exec('COMMIT');
+        inTransaction = false;
+        persistToDisk(instance);
+        return result;
+      } catch (err) {
+        inTransaction = false;
+        try {
+          instance.exec('ROLLBACK');
+        } catch (_) {}
+        throw err;
+      } finally {
+        release();
+      }
+    },
+    async close() {
+      if (!wasmDbPromise) return;
+      try {
+        const instance = await wasmDbPromise;
+        persistToDisk(instance);
+        instance.close();
+      } catch (_) {}
+    }
+  };
+}
+
 /**
  * Unified Async Database Abstraction Layer
  * - Production default (`DB_CLIENT=mysql`): mysql2/promise connection pool tuned for Hostinger Unlimited (limit <= 50)
- * - Local/Test fallback (`DB_CLIENT=sqlite`): built-in node:sqlite with WAL mode and serialized async transaction mutex
+ * - Local/Test/Cloud fallback (`DB_CLIENT=sqlite`): built-in node:sqlite (Node >= 22.13) or sql.js WASM (Node 20+)
  */
 function createDatabaseConnection(customDbPath, options = {}) {
   const dbClient = String(options.client || resolveDbClient()).trim().toLowerCase();
@@ -287,58 +498,58 @@ function createDatabaseConnection(customDbPath, options = {}) {
     };
   }
 
-  const { DatabaseSync } = require('node:sqlite');
   const resolvedPath = resolveSqliteDbPath(customDbPath);
-  if (resolvedPath !== ':memory:') {
-    fs.mkdirSync(path.dirname(path.resolve(resolvedPath)), { recursive: true });
-  }
-  const sqliteDb = new DatabaseSync(resolvedPath);
-  sqliteDb.exec(`
-    PRAGMA journal_mode = WAL;
-    PRAGMA synchronous = NORMAL;
-    PRAGMA busy_timeout = 5000;
-    PRAGMA cache_size = -64000;
-    PRAGMA temp_store = MEMORY;
-    PRAGMA foreign_keys = ON;
-  `);
+  const allowPathFallback = !customDbPath && !(process.env.SQLITE_DB_PATH || '').trim();
 
-  const base = createSqliteExecutor(sqliteDb);
-  let txLock = Promise.resolve();
+  if (!options.forceSqlJs && hasNativeSqlite()) {
+    const sqliteDb = openNativeSqliteWithFallback(resolvedPath, allowPathFallback);
+    const base = createSqliteExecutor(sqliteDb);
+    let txLock = Promise.resolve();
 
-  return {
-    ...base,
-    async transaction(fn) {
-      let release;
-      const prev = txLock;
-      txLock = new Promise((resolve) => {
-        release = resolve;
-      });
-      await prev;
-      try {
-        sqliteDb.exec('BEGIN IMMEDIATE');
-        const result = await fn(base);
-        sqliteDb.exec('COMMIT');
-        return result;
-      } catch (err) {
+    return {
+      ...base,
+      async transaction(fn) {
+        let release;
+        const prev = txLock;
+        txLock = new Promise((resolve) => {
+          release = resolve;
+        });
+        await prev;
         try {
-          sqliteDb.exec('ROLLBACK');
+          sqliteDb.exec('BEGIN IMMEDIATE');
+          const result = await fn(base);
+          sqliteDb.exec('COMMIT');
+          return result;
+        } catch (err) {
+          try {
+            sqliteDb.exec('ROLLBACK');
+          } catch (_) {}
+          throw err;
+        } finally {
+          release();
+        }
+      },
+      async close() {
+        try {
+          sqliteDb.close();
         } catch (_) {}
-        throw err;
-      } finally {
-        release();
       }
-    },
-    async close() {
-      try {
-        sqliteDb.close();
-      } catch (_) {}
-    }
-  };
+    };
+  }
+
+  if (hasSqlJs()) {
+    return createSqlJsConnection(resolvedPath);
+  }
+
+  throw new Error('No SQLite driver available (neither built-in node:sqlite nor sql.js).');
 }
 
 module.exports = {
   createDatabaseConnection,
   resolveDbClient,
   buildMysqlPoolConfig,
-  splitSqlStatements
+  splitSqlStatements,
+  hasNativeSqlite,
+  hasSqlJs,
+  hasAnySqlite
 };

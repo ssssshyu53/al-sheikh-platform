@@ -28,12 +28,12 @@ const ADMIN_TAB_GUIDES = {
   exams: {
     icon: 'file-text',
     title: 'استوديو الامتحانات والواجبات',
-    subtitle: 'عرض وإدارة جميع الامتحانات والواجبات الحالية، وبناء اختبارات جديدة باحترافية.',
+    subtitle: 'عرض وإدارة جميع الامتحانات والواجبات مع جدول أسئلة تفاعلي قابل للتعديل المباشر.',
     steps: [
-      { title: 'استعراض وتصفية الامتحانات الحالية', desc: 'من تبويب «عرض وإدارة الامتحانات» يمكنك البحث بالاسم، أو التصفية حسب النوع (امتحان أساسي، واجب، ملحق) أو الصف.' },
-      { title: 'تعديل أو تفعيل أو إخفاء أي اختبار', desc: 'اضغط «تعديل الأسئلة والبيانات» لتحديث أي سؤال أو درجة أو موعد، أو زر «إخفاء / تفعيل» للتحكم الفوري في ظهوره.' },
-      { title: 'إنشاء امتحان أو واجب جديد', desc: 'انتقل إلى «إنشاء امتحان أو واجب جديد»، اختر المحاضرة المرتبطة وحدد نوع الاختبار والمدة ومواعيد الفتح والإغلاق.' },
-      { title: 'بناء الأسئلة أو استيرادها دفعة واحدة', desc: 'أضف أسئلة «اختيار من متعدد» أو «صح أم خطأ» مع تحديد الإجابة الصحيحة في الخانة الخضراء (وتُخلط تلقائياً للطلاب)، أو استخدم الاستيراد الجماعي.' }
+      { title: 'استعراض وتصفية الامتحانات الحالية', desc: 'من تبويب «عرض وإدارة الامتحانات» ابحث بالاسم أو صفّ الاختبارات حسب النوع (امتحان أساسي، واجب، ملحق) أو الصف.' },
+      { title: 'التعديل المباشر للأسئلة داخل الجدول', desc: 'اضغط «تعديل الأسئلة والبيانات» لفتح جدول الأسئلة التفاعلي وتعديل نص السؤال أو الاختيارات أو الدرجات والترتيب مباشرة دون نوافذ منفصلة.' },
+      { title: 'إضافة وتكرار واستيراد الأسئلة بسرعة', desc: 'استخدم أزرار الجدول لإضافة صف اختيار من متعدد أو صح أم خطأ فوراً، أو تكرار أي صف بنقرة، أو استيراد أسئلة دفعة واحدة.' },
+      { title: 'الحفظ الفوري والتحكم في الظهور', desc: 'اضغط «حفظ التعديلات» لتحديث الاختبار فوراً، واستخدم زر «إخفاء / تفعيل» للتحكم في ظهوره للطلاب.' }
     ],
     tip: 'عند تحديد «موعد إغلاق» للاختبار، تُحجب الإجابات النموذجية عن الطلاب تلقائياً حتى انتهاء الموعد لمنع تسريب الأسئلة.'
   },
@@ -193,7 +193,18 @@ export function registerAdminMethods(proto) {
     },
 
     switchAdminExamSubTab(subTab = 'list') {
-      this.adminExamSubTab = subTab === 'create' ? 'create' : 'list';
+      if (subTab === 'edit' && this.editingAssessment) {
+        this.adminExamSubTab = 'edit';
+      } else {
+        this.adminExamSubTab = subTab === 'create' ? 'create' : 'list';
+        if (this.adminExamSubTab !== 'edit') this.editingAssessment = null;
+      }
+      this.renderAdminDashboard();
+    },
+
+    closeInlineAssessmentEditor() {
+      this.editingAssessment = null;
+      this.adminExamSubTab = 'list';
       this.renderAdminDashboard();
     },
 
@@ -260,10 +271,10 @@ export function registerAdminMethods(proto) {
       document.body.classList.remove('drawer-open');
 
       root.innerHTML = `
-        <div class="app-shell fade-in">
+        <div class="app-shell ${this.sidebarCollapsed ? 'sidebar-collapsed' : ''} fade-in">
           <div id="sidebarDrawerBackdrop" class="sidebar-drawer-backdrop" data-click="closeMobileSidebar" aria-hidden="true"></div>
           <aside class="app-sidebar no-print" aria-label="قائمة الإدارة">
-            <div class="sidebar-scroll-body">
+            <div class="sidebar-header">
               <div class="sidebar-profile">
                 <img src="/assets/logo.png" alt="شعار منصة متن" class="sidebar-profile-avatar" />
                 <div class="sidebar-profile-meta">
@@ -274,29 +285,34 @@ export function registerAdminMethods(proto) {
                     <span>${this.esc(this.user.phone || '')}</span>
                   </span>
                 </div>
+                <button type="button" class="sidebar-collapse-btn" data-click="toggleDesktopSidebar" aria-expanded="${!this.sidebarCollapsed}" title="${this.sidebarCollapsed ? 'توسيع القائمة الجانبية' : 'طي القائمة الجانبية'}" aria-label="طي أو توسيع القائمة الجانبية">
+                  ${this.icon('chevron-right', 16)}
+                </button>
                 <button type="button" class="sidebar-drawer-close" data-click="closeMobileSidebar" aria-label="إغلاق القائمة">
                   ${this.icon('x', 16)}
                 </button>
               </div>
+            </div>
 
+            <div class="sidebar-scroll-body">
               <div class="sidebar-group">
                 <div class="sidebar-group-label">المحتوى التعليمي</div>
                 <nav class="sidebar-nav">
-                  <button type="button" class="sidebar-link ${this.adminTab === 'lessons_list' && !this.activeLessonId ? 'active' : ''}" data-click="switchAdminTab" data-arg="lessons_list">
+                  <button type="button" class="sidebar-link ${this.adminTab === 'lessons_list' && !this.activeLessonId ? 'active' : ''}" data-click="switchAdminTab" data-arg="lessons_list" title="المحاضرات والإحصائيات">
                     <span class="nav-icon">${this.icon('book', 17)}</span>
                     <span class="sidebar-link-label">المحاضرات والإحصائيات</span>
                     <span class="sidebar-count">${d.lessons.length}</span>
                   </button>
-                  <button type="button" class="sidebar-link ${this.adminTab === 'add_lesson' ? 'active' : ''}" data-click="switchAdminTab" data-arg="add_lesson">
+                  <button type="button" class="sidebar-link ${this.adminTab === 'add_lesson' ? 'active' : ''}" data-click="switchAdminTab" data-arg="add_lesson" title="رفع محاضرة ومذكرة">
                     <span class="nav-icon">${this.icon('plus', 17)}</span>
                     <span class="sidebar-link-label">رفع محاضرة ومذكرة</span>
                   </button>
-                  <button type="button" class="sidebar-link ${this.adminTab === 'exams' ? 'active' : ''}" data-click="switchAdminTab" data-arg="exams">
+                  <button type="button" class="sidebar-link ${this.adminTab === 'exams' ? 'active' : ''}" data-click="switchAdminTab" data-arg="exams" title="الامتحانات والواجبات">
                     <span class="nav-icon">${this.icon('file-text', 17)}</span>
                     <span class="sidebar-link-label">الامتحانات والواجبات</span>
                     <span class="sidebar-count">${totalAssessmentsCount}</span>
                   </button>
-                  <button type="button" class="sidebar-link ${this.adminTab === 'live_sessions' ? 'active' : ''}" data-click="switchAdminTab" data-arg="live_sessions">
+                  <button type="button" class="sidebar-link ${this.adminTab === 'live_sessions' ? 'active' : ''}" data-click="switchAdminTab" data-arg="live_sessions" title="الحصص المباشرة">
                     <span class="nav-icon">${this.icon('radio', 17)}</span>
                     <span class="sidebar-link-label">الحصص المباشرة</span>
                     ${liveSessionsCount > 0 ? `<span class="sidebar-count is-accent">${liveSessionsCount}</span>` : ''}
@@ -307,26 +323,26 @@ export function registerAdminMethods(proto) {
               <div class="sidebar-group">
                 <div class="sidebar-group-label">الطلاب والمتابعة</div>
                 <nav class="sidebar-nav">
-                  <button type="button" class="sidebar-link ${this.adminTab === 'students' ? 'active' : ''}" data-click="switchAdminTab" data-arg="students">
+                  <button type="button" class="sidebar-link ${this.adminTab === 'students' ? 'active' : ''}" data-click="switchAdminTab" data-arg="students" title="الطلاب والأجهزة">
                     <span class="nav-icon">${this.icon('users', 17)}</span>
                     <span class="sidebar-link-label">الطلاب والأجهزة</span>
                     <span class="sidebar-count">${totalStudents}</span>
                   </button>
-                  <button type="button" class="sidebar-link ${this.adminTab === 'retakes' ? 'active' : ''}" data-click="switchAdminTab" data-arg="retakes">
+                  <button type="button" class="sidebar-link ${this.adminTab === 'retakes' ? 'active' : ''}" data-click="switchAdminTab" data-arg="retakes" title="الراسبون والملحق">
                     <span class="nav-icon">${this.icon('alert-triangle', 17)}</span>
                     <span class="sidebar-link-label">الراسبون والملحق</span>
                     ${d.failed_submissions.length > 0 ? `<span class="sidebar-count is-danger">${d.failed_submissions.length}</span>` : ''}
                   </button>
-                  <button type="button" class="sidebar-link ${this.adminTab === 'questions' ? 'active' : ''}" data-click="switchAdminTab" data-arg="questions">
+                  <button type="button" class="sidebar-link ${this.adminTab === 'questions' ? 'active' : ''}" data-click="switchAdminTab" data-arg="questions" title="أسئلة الطلاب">
                     <span class="nav-icon">${this.icon('help-circle', 17)}</span>
                     <span class="sidebar-link-label">أسئلة الطلاب</span>
                     ${pendingQuestions > 0 ? `<span class="sidebar-count is-accent">${pendingQuestions}</span>` : ''}
                   </button>
-                  <button type="button" class="sidebar-link ${this.adminTab === 'weekly_reports' ? 'active' : ''}" data-click="switchAdminTab" data-arg="weekly_reports">
+                  <button type="button" class="sidebar-link ${this.adminTab === 'weekly_reports' ? 'active' : ''}" data-click="switchAdminTab" data-arg="weekly_reports" title="متابعة الجمعة للأهل">
                     <span class="nav-icon">${this.icon('calendar', 17)}</span>
                     <span class="sidebar-link-label">متابعة الجمعة للأهل</span>
                   </button>
-                  <button type="button" class="sidebar-link ${this.adminTab === 'notifications' ? 'active' : ''}" data-click="switchAdminTab" data-arg="notifications">
+                  <button type="button" class="sidebar-link ${this.adminTab === 'notifications' ? 'active' : ''}" data-click="switchAdminTab" data-arg="notifications" title="إشعارات الطلاب">
                     <span class="nav-icon">${this.icon('bell', 17)}</span>
                     <span class="sidebar-link-label">إشعارات الطلاب</span>
                   </button>
@@ -336,16 +352,16 @@ export function registerAdminMethods(proto) {
               <div class="sidebar-group">
                 <div class="sidebar-group-label">الاشتراكات والنظام</div>
                 <nav class="sidebar-nav">
-                  <button type="button" class="sidebar-link ${this.adminTab === 'vouchers' ? 'active' : ''}" data-click="switchAdminTab" data-arg="vouchers">
+                  <button type="button" class="sidebar-link ${this.adminTab === 'vouchers' ? 'active' : ''}" data-click="switchAdminTab" data-arg="vouchers" title="كروت الشحن">
                     <span class="nav-icon">${this.icon('ticket', 17)}</span>
                     <span class="sidebar-link-label">كروت الشحن</span>
                     <span class="sidebar-count">${totalVouchers}</span>
                   </button>
-                  <button type="button" class="sidebar-link ${this.adminTab === 'security' ? 'active' : ''}" data-click="switchAdminTab" data-arg="security">
+                  <button type="button" class="sidebar-link ${this.adminTab === 'security' ? 'active' : ''}" data-click="switchAdminTab" data-arg="security" title="الحماية والسجلات">
                     <span class="nav-icon">${this.icon('shield', 17)}</span>
                     <span class="sidebar-link-label">الحماية والسجلات</span>
                   </button>
-                  <button type="button" class="sidebar-link ${this.adminTab === 'settings' ? 'active' : ''}" data-click="switchAdminTab" data-arg="settings">
+                  <button type="button" class="sidebar-link ${this.adminTab === 'settings' ? 'active' : ''}" data-click="switchAdminTab" data-arg="settings" title="إعدادات المنصة">
                     <span class="nav-icon">${this.icon('settings', 17)}</span>
                     <span class="sidebar-link-label">إعدادات المنصة</span>
                   </button>
@@ -354,7 +370,15 @@ export function registerAdminMethods(proto) {
             </div>
 
             <div class="sidebar-footer">
-              <button type="button" class="btn btn-outline-gold btn-sm btn-block" data-click="loadAdminDashboard">${this.icon('refresh', 15)} <span>تحديث البيانات</span></button>
+              <div class="sidebar-footer-actions">
+                <button type="button" class="btn btn-outline-gold btn-sm sidebar-refresh-btn" data-click="loadAdminDashboard" title="تحديث البيانات">
+                  ${this.icon('refresh', 15)}
+                  <span class="sidebar-footer-label">تحديث البيانات</span>
+                </button>
+                <button type="button" class="btn btn-ghost-subtle btn-sm sidebar-guide-quick-btn" data-click="openAdminTabGuide" data-arg="${this.esc(this.adminTab)}" title="شرح الصفحة الحالية" aria-label="شرح الصفحة الحالية">
+                  ${this.icon('help-circle', 16)}
+                </button>
+              </div>
             </div>
           </aside>
 
@@ -939,7 +963,9 @@ export function registerAdminMethods(proto) {
           return true;
         });
 
-        const subTab = this.adminExamSubTab === 'create' ? 'create' : 'list';
+        const subTab = (this.adminExamSubTab === 'edit' && this.editingAssessment)
+          ? 'edit'
+          : (this.adminExamSubTab === 'create' ? 'create' : 'list');
         const fmtSchedule = (iso) => {
           if (!iso) return '';
           try {
@@ -948,6 +974,9 @@ export function registerAdminMethods(proto) {
             return '';
           }
         };
+        const toLocalInput = (iso) => iso
+          ? new Date(new Date(iso).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+          : '';
 
         return `
           <div class="fade-in">
@@ -979,6 +1008,12 @@ export function registerAdminMethods(proto) {
                 ${this.icon('plus', 16)}
                 <span>إنشاء امتحان أو واجب جديد</span>
               </button>
+              ${this.editingAssessment ? `
+                <button type="button" role="tab" aria-selected="${subTab === 'edit'}" class="exam-studio-tab ${subTab === 'edit' ? 'active' : ''}" data-click="switchAdminExamSubTab" data-arg="edit">
+                  ${this.icon('edit', 16)}
+                  <span>تعديل جدول الأسئلة: ${this.esc(this.editingAssessment.title)}</span>
+                </button>
+              ` : ''}
             </div>
 
             ${subTab === 'list' ? `
@@ -1065,7 +1100,7 @@ export function registerAdminMethods(proto) {
 
                           <div class="exam-card-actions">
                             <button type="button" class="btn btn-gold btn-sm" style="flex:1;" data-click="openAssessmentEditorDirect" data-id="${Number(a.id)}" data-lesson-id="${Number(a.lesson_id)}">
-                              ${this.icon('edit', 14)} <span>تعديل الأسئلة والبيانات</span>
+                              ${this.icon('edit', 14)} <span>تعديل الأسئلة بالجدول</span>
                             </button>
                             <button type="button" class="btn btn-outline-gold btn-sm" data-click="toggleAssessmentActive" data-id="${Number(a.id)}" data-next="${isActive ? 0 : 1}" data-lesson-id="${Number(a.lesson_id)}" data-source="studio">
                               ${this.icon(isActive ? 'eye-off' : 'eye', 14)} <span>${isActive ? 'إخفاء' : 'تفعيل'}</span>
@@ -1080,8 +1115,72 @@ export function registerAdminMethods(proto) {
                   </div>
                 `}
               </div>
-            ` : `
-              <div class="section-card">
+            ` : subTab === 'edit' ? (() => {
+              const ea = this.editingAssessment;
+              const eaActive = Number(ea.is_active) === 1 || ea.is_active === true;
+              return `
+                <div class="section-card q-inline-workspace">
+                  <form data-submit="handleEditAssessmentSubmit" data-id="${Number(ea.id)}" data-lesson-id="${Number(ea.lesson_id)}">
+                    <div class="q-workspace-topbar">
+                      <div class="q-workspace-title-group">
+                        <button type="button" class="btn btn-ghost-subtle btn-sm" data-click="closeInlineAssessmentEditor">
+                          ${this.icon('arrow-right', 15)} <span>العودة للامتحانات</span>
+                        </button>
+                        <div>
+                          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                            <h3 style="margin:0; font-size:1.05rem; color:var(--text-primary);">${this.esc(ea.title)}</h3>
+                            <span class="badge ${eaActive ? 'badge-success' : 'badge-danger'}">${eaActive ? 'مفعل للطلاب' : 'مخفي'}</span>
+                          </div>
+                          <p style="margin:2px 0 0; font-size:0.78rem; color:var(--text-secondary);">المحاضرة: ${this.esc(ea.lesson_title || `#${ea.lesson_id}`)} • عدّل أي خانة مباشرة داخل الجدول ثم اضغط حفظ</p>
+                        </div>
+                      </div>
+                      <button type="submit" class="btn btn-gold">
+                        ${this.icon('save', 15)} <span>حفظ جميع التعديلات</span>
+                      </button>
+                    </div>
+
+                    <div class="q-meta-strip">
+                      <div class="form-group">
+                        <label>عنوان الاختبار</label>
+                        <input type="text" id="editExamTitle" class="form-control" value="${this.esc(ea.title)}" required />
+                      </div>
+                      <div class="form-group">
+                        <label>نوع التقييم</label>
+                        <select id="editExamType" class="form-control">
+                          <option value="exam" ${ea.assessment_type === 'exam' ? 'selected' : ''}>امتحان أساسي</option>
+                          <option value="homework" ${ea.assessment_type === 'homework' ? 'selected' : ''}>واجب منزلي</option>
+                          <option value="retake_exam" ${ea.assessment_type === 'retake_exam' ? 'selected' : ''}>امتحان ملحق</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label>المدة (دقيقة)</label>
+                        <input type="number" id="editExamTimeLimit" class="form-control" value="${Number(ea.time_limit_minutes || 15)}" min="1" max="180" required />
+                      </div>
+                      <div class="form-group">
+                        <label>موعد الفتح (اختياري)</label>
+                        <input type="datetime-local" id="editExamStart" class="form-control" value="${toLocalInput(ea.scheduled_start)}" />
+                      </div>
+                      <div class="form-group">
+                        <label>موعد الإغلاق (اختياري)</label>
+                        <input type="datetime-local" id="editExamEnd" class="form-control" value="${toLocalInput(ea.scheduled_end)}" />
+                      </div>
+                    </div>
+
+                    ${this.renderAdminQuestionsTable('editExamQuestionsList', (ea.questions && ea.questions.length > 0) ? ea.questions : [null], { showBulkImport: true })}
+
+                    <div class="exam-builder-footer">
+                      <button type="button" class="btn btn-ghost-subtle" data-click="closeInlineAssessmentEditor">
+                        ${this.icon('arrow-right', 15)} <span>إغلاق والعودة للقائمة</span>
+                      </button>
+                      <button type="submit" class="btn btn-gold" style="padding:11px 24px;">
+                        ${this.icon('save', 15)} <span>حفظ جميع تعديلات الأسئلة والبيانات</span>
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              `;
+            })() : `
+              <div class="section-card q-inline-workspace">
                 ${d.lessons.length === 0 ? `
                   <div class="exam-empty-state">
                     <div class="exam-empty-icon">${this.icon('book', 32)}</div>
@@ -1138,30 +1237,21 @@ export function registerAdminMethods(proto) {
                     </div>
 
                     <div class="exam-builder-step">
-                      <div class="exam-step-head">
+                      <div class="exam-step-head" style="margin-bottom:12px;">
                         <span class="exam-step-num">٢</span>
                         <div style="flex:1;">
-                          <h4>بنك الأسئلة والإجابات النموذجية</h4>
-                          <p>اكتب الإجابة الصحيحة دائماً في الخانة الخضراء، وستقوم المنصة بخلط الاختيارات عشوائياً لكل طالب</p>
-                        </div>
-                        <div id="examBuilderMetaSummary" class="exam-summary-bar" aria-live="polite">
-                          <span><strong>1</strong> سؤال</span>
-                          <span class="exam-summary-sep">•</span>
-                          <span><strong>2</strong> درجة إجمالية</span>
+                          <h4>جدول الأسئلة والإجابات المباشر (Inline Editing)</h4>
+                          <p>أضف وعدّل الأسئلة مباشرة داخل الجدول — اكتب الإجابة الصحيحة في الخانة الخضراء وستُخلط الاختيارات تلقائياً للطلاب</p>
                         </div>
                       </div>
 
-                      <div id="adminMcqQuestionsList" style="margin-top:12px;">
-                        ${this.renderAdminQuestionInputRow(1)}
-                      </div>
+                      ${this.renderAdminQuestionsTable('adminMcqQuestionsList', [null], { showBulkImport: true })}
 
                       <div class="exam-builder-footer">
-                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                          <button type="button" class="btn btn-outline-gold" data-click="addMoreQuestionRow" data-container="adminMcqQuestionsList" data-qtype="mcq">${this.icon('plus', 15)} <span>إضافة اختيار من متعدد</span></button>
-                          <button type="button" class="btn btn-outline-gold" data-click="addMoreQuestionRow" data-container="adminMcqQuestionsList" data-qtype="true_false">${this.icon('check-circle', 15)} <span>إضافة سؤال صح أم خطأ</span></button>
-                          <button type="button" class="btn btn-emerald" data-click="openBulkImportQuestionsModal" data-container="adminMcqQuestionsList">${this.icon('download', 14)} <span>استيراد أسئلة دفعة واحدة</span></button>
+                        <div style="font-size:0.78rem; color:var(--text-secondary);">
+                          ${this.icon('shield-check', 14)} تُحفظ الأسئلة وتُعرض للطلاب بترتيب اختيارات عشوائي لمنع الغش
                         </div>
-                        <button type="submit" class="btn btn-gold" style="padding:11px 22px;">${this.icon('check-circle', 15)} <span>حفظ ونشر الاختبار الآن</span></button>
+                        <button type="submit" class="btn btn-gold" style="padding:11px 24px;">${this.icon('check-circle', 15)} <span>حفظ ونشر الاختبار الآن</span></button>
                       </div>
                     </div>
                   </form>
@@ -1773,6 +1863,69 @@ export function registerAdminMethods(proto) {
       `;
     },
 
+    renderAdminQuestionsTable(containerId, questionsList = [null], opts = {}) {
+      const list = Array.isArray(questionsList) && questionsList.length > 0 ? questionsList : [null];
+      const totalPts = list.reduce((sum, q) => {
+        const p = Number(q?.points || 2);
+        return sum + (Number.isFinite(p) && p >= 1 ? p : 2);
+      }, 0);
+      const showBulkImport = opts.showBulkImport !== false;
+      const isCompact = Boolean(opts.compact);
+
+      return `
+        <div class="q-inline-table-shell ${isCompact ? 'is-compact' : ''}">
+          <div class="q-table-toolbar">
+            <div class="q-table-toolbar-start">
+              <div class="q-table-search-wrap">
+                <span class="q-table-search-icon">${this.icon('search', 14)}</span>
+                <input type="text" class="form-control q-table-search-input" placeholder="ابحث داخل أسئلة هذا الاختبار..." data-input="filterInlineQuestions" data-container="${this.esc(containerId)}" />
+              </div>
+              <div id="${this.esc(containerId)}Summary" class="exam-summary-bar" aria-live="polite">
+                <span><strong>${list.length}</strong> سؤال</span>
+                <span class="exam-summary-sep">•</span>
+                <span><strong>${totalPts}</strong> درجة</span>
+              </div>
+            </div>
+            <div class="q-table-toolbar-actions">
+              <button type="button" class="btn btn-outline-gold btn-sm" data-click="addMoreQuestionRow" data-container="${this.esc(containerId)}" data-qtype="mcq">
+                ${this.icon('plus', 14)} <span>اختيار متعدد</span>
+              </button>
+              <button type="button" class="btn btn-outline-gold btn-sm" data-click="addMoreQuestionRow" data-container="${this.esc(containerId)}" data-qtype="true_false">
+                ${this.icon('check-circle', 14)} <span>صح أم خطأ</span>
+              </button>
+              ${showBulkImport ? `
+                <button type="button" class="btn btn-emerald btn-sm" data-click="openBulkImportQuestionsModal" data-container="${this.esc(containerId)}">
+                  ${this.icon('download', 14)} <span>استيراد جماعي</span>
+                </button>
+              ` : ''}
+            </div>
+          </div>
+
+          <div class="q-table-scroll">
+            <table class="q-inline-table">
+              <thead>
+                <tr>
+                  <th class="q-th-idx">#</th>
+                  <th class="q-th-question">نص السؤال والمبحث والتعليل</th>
+                  <th class="q-th-type">النوع</th>
+                  <th class="q-th-options">الإجابة الصحيحة والاختيارات</th>
+                  <th class="q-th-points">الدرجة</th>
+                  <th class="q-th-actions">إجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="${this.esc(containerId)}" class="q-table-body">
+                ${list.map((q, idx) => this.renderAdminQuestionInputRow(idx + 1, q)).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <button type="button" class="q-table-quickadd" data-click="addMoreQuestionRow" data-container="${this.esc(containerId)}" data-qtype="mcq">
+            ${this.icon('plus', 15)} <span>إضافة صف سؤال جديد مباشرة في الجدول</span>
+          </button>
+        </div>
+      `;
+    },
+
     renderAdminQuestionInputRow(index, existing = null, defaultType = 'mcq') {
       const opts = existing && Array.isArray(existing.options) ? existing.options : [];
       const correct = existing ? String(existing.correct_option || '').trim() : '';
@@ -1782,84 +1935,103 @@ export function registerAdminMethods(proto) {
       const qType = inferredTf ? 'true_false' : 'mcq';
       const wrongOpts = opts.filter((o) => o !== correct);
       const pointsVal = Number(existing?.points || 2);
+      const safePts = Number.isFinite(pointsVal) && pointsVal >= 1 ? pointsVal : 2;
+      const qidAttr = existing?.id ? ` data-qid="${Number(existing.id)}"` : '';
+      const tfVal = correct === 'خطأ' ? 'خطأ' : 'صح';
 
       return `
-        <div class="question-box admin-q-row" style="margin-bottom:14px;">
-          <div class="admin-q-header">
-            <div style="display:flex; align-items:center; gap:8px;">
+        <tr class="admin-q-row"${qidAttr}>
+          <td class="q-col-idx" data-label="#">
+            <div class="q-idx-stack">
               <span class="q-row-num-pill">${Number(index)}</span>
-              <span class="q-row-title" style="font-weight:800; color:var(--text-primary);">السؤال (${Number(index)})</span>
+              <div class="q-reorder-btns">
+                <button type="button" class="q-icon-btn q-move-btn" data-click="moveQuestionRow" data-dir="up" title="تحريك السؤال لأعلى" aria-label="تحريك لأعلى">${this.icon('chevron-up', 13)}</button>
+                <button type="button" class="q-icon-btn q-move-btn" data-click="moveQuestionRow" data-dir="down" title="تحريك السؤال لأسفل" aria-label="تحريك لأسفل">${this.icon('chevron-down', 13)}</button>
+              </div>
             </div>
-            <div style="display:flex; gap:6px; flex-wrap:wrap;">
-              <button type="button" class="btn btn-outline-gold btn-sm" data-click="duplicateQuestionRow" title="تكرار هذا السؤال">${this.icon('copy', 13)} <span>تكرار</span></button>
-              <button type="button" class="btn btn-danger btn-sm" data-click="removeAdminQuestionRow">${this.icon('trash', 13)} <span>حذف</span></button>
+          </td>
+          <td class="q-col-question" data-label="نص السؤال والمبحث">
+            <textarea class="q-cell-textarea q-text" rows="2" placeholder="اكتب نص السؤال أو العبارة الشرعية هنا..." required>${this.esc(existing?.question_text || '')}</textarea>
+            <div class="q-sub-fields">
+              <input type="text" class="q-cell-sub q-topic" placeholder="المبحث الشرعي (مثال: أحكام الطلاق)" value="${this.esc(existing?.topic_tag || '')}" required />
+              <input type="text" class="q-cell-sub q-exp" placeholder="التعليل الشرعي بعد التسليم (اختياري)" value="${this.esc(existing?.explanation || '')}" />
             </div>
-          </div>
-          <div class="grid-3">
-            <div class="form-group">
-              <label>نوع السؤال</label>
-              <select class="form-control q-type" data-change="onAdminQuestionTypeChange">
-                <option value="mcq" ${qType === 'mcq' ? 'selected' : ''}>اختيار من متعدد (MCQ)</option>
-                <option value="true_false" ${qType === 'true_false' ? 'selected' : ''}>صح أم خطأ</option>
-              </select>
+          </td>
+          <td class="q-col-type" data-label="النوع">
+            <select class="q-cell-select q-type" data-change="onAdminQuestionTypeChange" aria-label="نوع السؤال">
+              <option value="mcq" ${qType === 'mcq' ? 'selected' : ''}>اختيار متعدد</option>
+              <option value="true_false" ${qType === 'true_false' ? 'selected' : ''}>صح أم خطأ</option>
+            </select>
+          </td>
+          <td class="q-col-options" data-label="الإجابة الصحيحة والاختيارات">
+            <div class="q-mcq-fields q-options-grid" style="${qType === 'true_false' ? 'display:none;' : ''}">
+              <div class="q-opt-item is-correct">
+                <span class="q-opt-tag is-correct" title="الإجابة الصحيحة">${this.icon('check', 12)}</span>
+                <input type="text" class="q-cell-opt q-opt1" placeholder="الإجابة الصحيحة *" value="${this.esc(qType === 'mcq' ? correct : '')}" ${qType === 'mcq' ? 'required' : ''} />
+              </div>
+              <div class="q-opt-item">
+                <span class="q-opt-tag" title="اختيار خاطئ ١">١</span>
+                <input type="text" class="q-cell-opt q-opt2" placeholder="خطأ ١ *" value="${this.esc(qType === 'mcq' ? (wrongOpts[0] || '') : '')}" ${qType === 'mcq' ? 'required' : ''} />
+              </div>
+              <div class="q-opt-item">
+                <span class="q-opt-tag" title="اختيار خاطئ ٢">٢</span>
+                <input type="text" class="q-cell-opt q-opt3" placeholder="خطأ ٢ (اختياري)" value="${this.esc(qType === 'mcq' ? (wrongOpts[1] || '') : '')}" />
+              </div>
+              <div class="q-opt-item">
+                <span class="q-opt-tag" title="اختيار خاطئ ٣">٣</span>
+                <input type="text" class="q-cell-opt q-opt4" placeholder="خطأ ٣ (اختياري)" value="${this.esc(qType === 'mcq' ? (wrongOpts[2] || '') : '')}" />
+              </div>
             </div>
-            <div class="form-group"><label>المبحث الشرعي</label><input type="text" class="form-control q-topic" placeholder="مثال: أحكام الطلاق" value="${this.esc(existing?.topic_tag || '')}" required /></div>
-            <div class="form-group"><label>الدرجات</label><input type="number" class="form-control q-points" min="1" max="100" value="${Number.isFinite(pointsVal) && pointsVal >= 1 ? pointsVal : 2}" data-input="updateExamBuilderSummary" required /></div>
-          </div>
-          <div class="form-group"><label>نص السؤال</label><input type="text" class="form-control q-text" placeholder="اكتب السؤال أو العبارة الشرعية هنا..." value="${this.esc(existing?.question_text || '')}" required /></div>
-          <div class="q-mcq-fields grid-2" style="${qType === 'true_false' ? 'display:none;' : ''}">
-            <div class="form-group q-correct-field">
-              <label>${this.icon('check-circle', 14)} <span>الإجابة الصحيحة (تُخلط تلقائياً للطلاب)</span></label>
-              <input type="text" class="form-control q-opt1" placeholder="اكتب الإجابة الصحيحة هنا" value="${this.esc(qType === 'mcq' ? correct : '')}" ${qType === 'mcq' ? 'required' : ''} />
+            <div class="q-tf-fields" style="${qType === 'true_false' ? '' : 'display:none;'}">
+              <input type="hidden" class="q-tf-correct" value="${tfVal}" />
+              <div class="q-tf-segment" role="group" aria-label="الإجابة الصحيحة صح أم خطأ">
+                <button type="button" class="q-tf-btn is-true ${tfVal === 'صح' ? 'is-selected' : ''}" data-click="setTfQuestionAnswer" data-val="صح">
+                  ${this.icon('check-circle', 14)} <span>صح</span>
+                </button>
+                <button type="button" class="q-tf-btn is-false ${tfVal === 'خطأ' ? 'is-selected' : ''}" data-click="setTfQuestionAnswer" data-val="خطأ">
+                  ${this.icon('x-circle', 14)} <span>خطأ</span>
+                </button>
+              </div>
             </div>
-            <div class="form-group">
-              <label>الاختيار الخاطئ ١ (مطلوب)</label>
-              <input type="text" class="form-control q-opt2" placeholder="اختيار مشتّت ١" value="${this.esc(qType === 'mcq' ? (wrongOpts[0] || '') : '')}" ${qType === 'mcq' ? 'required' : ''} />
+          </td>
+          <td class="q-col-points" data-label="الدرجة">
+            <input type="number" class="q-cell-points q-points" min="1" max="100" value="${safePts}" data-input="updateExamBuilderSummary" aria-label="درجة السؤال" required />
+          </td>
+          <td class="q-col-actions" data-label="إجراءات">
+            <div class="q-row-actions">
+              <button type="button" class="q-icon-btn" data-click="duplicateQuestionRow" title="تكرار هذا السؤال" aria-label="تكرار السؤال">${this.icon('copy', 15)}</button>
+              <button type="button" class="q-icon-btn is-danger" data-click="removeAdminQuestionRow" title="حذف هذا السؤال" aria-label="حذف السؤال">${this.icon('trash', 15)}</button>
             </div>
-            <div class="form-group">
-              <label>الاختيار الخاطئ ٢ (اختياري)</label>
-              <input type="text" class="form-control q-opt3" placeholder="اختيار مشتّت ٢" value="${this.esc(qType === 'mcq' ? (wrongOpts[1] || '') : '')}" />
-            </div>
-            <div class="form-group">
-              <label>الاختيار الخاطئ ٣ (اختياري)</label>
-              <input type="text" class="form-control q-opt4" placeholder="اختيار مشتّت ٣" value="${this.esc(qType === 'mcq' ? (wrongOpts[2] || '') : '')}" />
-            </div>
-          </div>
-          <div class="q-tf-fields" style="${qType === 'true_false' ? '' : 'display:none;'} margin-bottom:12px;">
-            <div class="form-group q-correct-field" style="margin-bottom:0;">
-              <label>${this.icon('check-circle', 14)} <span>الإجابة الصحيحة (صح أم خطأ)</span></label>
-              <select class="form-control q-tf-correct">
-                <option value="صح" ${correct !== 'خطأ' ? 'selected' : ''}>العبارة صحيحة (صح)</option>
-                <option value="خطأ" ${correct === 'خطأ' ? 'selected' : ''}>العبارة خاطئة (خطأ)</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-group" style="margin-bottom:0;"><label>التعليل الشرعي للطالب بعد التسليم (اختياري)</label><input type="text" class="form-control q-exp" placeholder="التوضيح أو الدليل الشرعي الذي يظهر للطالب بعد الحل..." value="${this.esc(existing?.explanation || '')}" /></div>
-        </div>
+          </td>
+        </tr>
       `;
+    },
+
+    createQuestionRowElement(index, existing = null, defaultType = 'mcq') {
+      const tpl = document.createElement('template');
+      tpl.innerHTML = this.renderAdminQuestionInputRow(index, existing, defaultType).trim();
+      return tpl.content.firstElementChild;
     },
 
     updateExamBuilderSummary(containerId = 'adminMcqQuestionsList') {
       const container = document.getElementById(containerId);
-      const summaryEl = document.getElementById('examBuilderMetaSummary');
+      const summaryEl = document.getElementById(`${containerId}Summary`) || document.getElementById('examBuilderMetaSummary');
       if (!container || !summaryEl) return;
       const rows = container.querySelectorAll('.admin-q-row');
       let totalPts = 0;
       rows.forEach((r) => {
         totalPts += Math.max(1, Number(r.querySelector('.q-points')?.value || 2) || 2);
       });
-      summaryEl.innerHTML = `<span><strong>${rows.length}</strong> سؤال</span><span class="exam-summary-sep">•</span><span><strong>${totalPts}</strong> درجة إجمالية</span>`;
+      summaryEl.innerHTML = `<span><strong>${rows.length}</strong> سؤال</span><span class="exam-summary-sep">•</span><span><strong>${totalPts}</strong> درجة</span>`;
     },
 
     renumberAdminQuestionRows(container) {
       if (!container) return;
       container.querySelectorAll('.admin-q-row').forEach((r, idx) => {
         const numPill = r.querySelector('.q-row-num-pill');
-        const titleEl = r.querySelector('.q-row-title');
         if (numPill) numPill.textContent = String(idx + 1);
-        if (titleEl) titleEl.textContent = `السؤال (${idx + 1})`;
       });
-      if (container.id === 'adminMcqQuestionsList') this.updateExamBuilderSummary('adminMcqQuestionsList');
+      if (container.id) this.updateExamBuilderSummary(container.id);
     },
 
     onAdminQuestionTypeChange(selectEl) {
@@ -1874,6 +2046,53 @@ export function registerAdminMethods(proto) {
       if (tfBox) tfBox.style.display = isTf ? '' : 'none';
       if (opt1) opt1.required = !isTf;
       if (opt2) opt2.required = !isTf;
+    },
+
+    setTfQuestionAnswer(btnEl, val) {
+      const row = btnEl.closest('.admin-q-row');
+      if (!row) return;
+      const cleanVal = val === 'خطأ' ? 'خطأ' : 'صح';
+      const hidden = row.querySelector('.q-tf-correct');
+      if (hidden) hidden.value = cleanVal;
+      row.querySelectorAll('.q-tf-btn').forEach((b) => {
+        b.classList.toggle('is-selected', b.dataset.val === cleanVal);
+      });
+    },
+
+    moveQuestionRow(btnEl, dir = 'up') {
+      const row = btnEl.closest('.admin-q-row');
+      const container = row ? row.parentElement : null;
+      if (!row || !container) return;
+      if (dir === 'up' && row.previousElementSibling) {
+        container.insertBefore(row, row.previousElementSibling);
+      } else if (dir === 'down' && row.nextElementSibling) {
+        container.insertBefore(row.nextElementSibling, row);
+      } else {
+        return;
+      }
+      this.renumberAdminQuestionRows(container);
+    },
+
+    filterInlineQuestionsTable(containerId, query = '') {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      const q = String(query || '').trim().toLowerCase();
+      container.querySelectorAll('.admin-q-row').forEach((row) => {
+        if (!q) {
+          row.style.display = '';
+          return;
+        }
+        const hay = [
+          row.querySelector('.q-text')?.value,
+          row.querySelector('.q-topic')?.value,
+          row.querySelector('.q-exp')?.value,
+          row.querySelector('.q-opt1')?.value,
+          row.querySelector('.q-opt2')?.value,
+          row.querySelector('.q-opt3')?.value,
+          row.querySelector('.q-opt4')?.value
+        ].join(' ').toLowerCase();
+        row.style.display = hay.includes(q) ? '' : 'none';
+      });
     },
 
     duplicateQuestionRow(btnEl) {
@@ -1899,10 +2118,11 @@ export function registerAdminMethods(proto) {
               row.querySelector('.q-opt4')?.value || ''
             ].filter(Boolean)
       };
-      const div = document.createElement('div');
-      div.innerHTML = this.renderAdminQuestionInputRow(container.querySelectorAll('.admin-q-row').length + 1, existing, qType);
-      row.insertAdjacentElement('afterend', div.firstElementChild);
+      const inserted = this.createQuestionRowElement(container.querySelectorAll('.admin-q-row').length + 1, existing, qType);
+      row.insertAdjacentElement('afterend', inserted);
       this.renumberAdminQuestionRows(container);
+      const focusTarget = inserted.querySelector('.q-text');
+      if (focusTarget) focusTarget.focus();
     },
 
     removeAdminQuestionRow(btnEl) {
@@ -1921,11 +2141,11 @@ export function registerAdminMethods(proto) {
       const container = document.getElementById(containerId);
       if (!container) return;
       const count = container.querySelectorAll('.admin-q-row').length + 1;
-      const div = document.createElement('div');
-      div.innerHTML = this.renderAdminQuestionInputRow(count, null, defaultType);
-      const inserted = div.firstElementChild;
+      const inserted = this.createQuestionRowElement(count, null, defaultType);
       container.appendChild(inserted);
-      if (containerId === 'adminMcqQuestionsList') this.updateExamBuilderSummary('adminMcqQuestionsList');
+      this.updateExamBuilderSummary(containerId);
+      const focusTarget = inserted.querySelector('.q-text');
+      if (focusTarget) focusTarget.focus();
       try { inserted.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch {}
     },
 
@@ -2167,44 +2387,43 @@ export function registerAdminMethods(proto) {
       try {
         const data = await this.api(`/api/admin/lessons/${Number(lessonId)}/assessments`);
         this._loadedLessonAssessments = data.assessments || [];
-        this._assessmentEditorReturnToStudio = true;
-        this.openEditAssessmentModal(assessmentId, lessonId);
+        const target = this._loadedLessonAssessments.find((x) => x.id === Number(assessmentId));
+        if (!target) {
+          this.showToast('تعذر العثور على هذا الاختبار.', 'danger');
+          return;
+        }
+        this.editingAssessment = {
+          ...target,
+          lesson_id: Number(lessonId),
+          lesson_title: data.lesson_title || ''
+        };
+        this.closeModal();
+        this.adminTab = 'exams';
+        this.adminExamSubTab = 'edit';
+        this.renderAdminDashboard();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } catch (err) {
         this.showToast(err.message, 'danger');
       }
     },
 
     openEditAssessmentModal(assessmentId, lessonId) {
-      const a = (this._loadedLessonAssessments || []).find((x) => x.id === assessmentId);
-      if (!a) return;
-      const toLocal = (iso) => iso ? new Date(new Date(iso).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : '';
-      this.openModal(`
-        <div class="card-meta-row">
-          <h3 style="color:var(--gold-400); font-size:1.05rem;">${this.icon('edit', 15)} تعديل الاختبار والأسئلة</h3>
-          <button class="btn btn-danger btn-sm" data-click="closeModal">${this.icon('x', 14)} إغلاق</button>
-        </div>
-        <form data-submit="handleEditAssessmentSubmit" data-id="${Number(a.id)}" data-lesson-id="${Number(lessonId)}">
-          <div class="grid-3">
-            <div class="form-group"><label>العنوان</label><input type="text" id="editExamTitle" class="form-control" value="${this.esc(a.title)}" required /></div>
-            <div class="form-group"><label>المدة (دقيقة)</label><input type="number" id="editExamTimeLimit" class="form-control" value="${Number(a.time_limit_minutes)}" min="1" max="180" required /></div>
-            <div class="form-group"><label>النوع</label><select id="editExamType" class="form-control"><option value="exam" ${a.assessment_type === 'exam' ? 'selected' : ''}>امتحان أساسي</option><option value="homework" ${a.assessment_type === 'homework' ? 'selected' : ''}>واجب</option><option value="retake_exam" ${a.assessment_type === 'retake_exam' ? 'selected' : ''}>امتحان ملحق</option></select></div>
-          </div>
-          <div class="grid-2">
-            <div class="form-group"><label>موعد الفتح (اختياري)</label><input type="datetime-local" id="editExamStart" class="form-control" value="${toLocal(a.scheduled_start)}" /></div>
-            <div class="form-group"><label>موعد الإغلاق (اختياري)</label><input type="datetime-local" id="editExamEnd" class="form-control" value="${toLocal(a.scheduled_end)}" /></div>
-          </div>
-          <div id="editExamQuestionsList" style="max-height:42vh; overflow-y:auto; margin-top:8px;">
-            ${(a.questions || []).map((q, idx) => this.renderAdminQuestionInputRow(idx + 1, q)).join('')}
-          </div>
-          <div class="card-meta-row" style="margin-top:12px; margin-bottom:0;">
-            <div style="display:flex; gap:6px; flex-wrap:wrap;">
-              <button type="button" class="btn btn-outline-gold btn-sm" data-click="addMoreQuestionRow" data-container="editExamQuestionsList" data-qtype="mcq">${this.icon('plus', 14)} <span>اختيار من متعدد</span></button>
-              <button type="button" class="btn btn-outline-gold btn-sm" data-click="addMoreQuestionRow" data-container="editExamQuestionsList" data-qtype="true_false">${this.icon('check-circle', 14)} <span>صح أم خطأ</span></button>
-            </div>
-            <button type="submit" class="btn btn-gold">${this.icon('save', 15)} <span>حفظ التعديلات</span></button>
-          </div>
-        </form>
-      `, '780px');
+      const a = (this._loadedLessonAssessments || []).find((x) => x.id === Number(assessmentId));
+      if (!a) {
+        this.openAssessmentEditorDirect(assessmentId, lessonId);
+        return;
+      }
+      const lessonObj = (this.adminData?.lessons || []).find((l) => l.id === Number(lessonId));
+      this.editingAssessment = {
+        ...a,
+        lesson_id: Number(lessonId),
+        lesson_title: lessonObj ? lessonObj.title : ''
+      };
+      this.closeModal();
+      this.adminTab = 'exams';
+      this.adminExamSubTab = 'edit';
+      this.renderAdminDashboard();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     },
 
     collectQuestionsFromContainer(containerSelector) {
@@ -2212,28 +2431,30 @@ export function registerAdminMethods(proto) {
       const questions = [];
       rows.forEach((row) => {
         const qType = row.querySelector('.q-type')?.value === 'true_false' ? 'true_false' : 'mcq';
-        const qText = row.querySelector('.q-text').value.trim();
-        const topic = row.querySelector('.q-topic').value.trim();
+        const qText = (row.querySelector('.q-text')?.value || '').trim();
+        const topic = (row.querySelector('.q-topic')?.value || '').trim();
         const points = Math.min(Math.max(Number(row.querySelector('.q-points')?.value || 2) || 2, 1), 100);
-        const exp = row.querySelector('.q-exp').value.trim();
+        const exp = (row.querySelector('.q-exp')?.value || '').trim();
+        const rawQid = Number(row.dataset.qid || 0);
+        const idField = Number.isInteger(rawQid) && rawQid > 0 ? { id: rawQid } : {};
         if (qType === 'true_false') {
           const tfCorrect = row.querySelector('.q-tf-correct')?.value === 'خطأ' ? 'خطأ' : 'صح';
-          questions.push({ question_type: 'true_false', question_text: qText, topic_tag: topic || 'مباحث الدرس', options: ['صح', 'خطأ'], correct_option: tfCorrect, explanation: exp, points });
+          questions.push({ ...idField, question_type: 'true_false', question_text: qText, topic_tag: topic || 'مباحث الدرس', options: ['صح', 'خطأ'], correct_option: tfCorrect, explanation: exp, points });
           return;
         }
-        const opt1 = row.querySelector('.q-opt1').value.trim();
-        const opt2 = row.querySelector('.q-opt2').value.trim();
-        const opt3 = row.querySelector('.q-opt3').value.trim();
-        const opt4 = row.querySelector('.q-opt4').value.trim();
-        questions.push({ question_type: 'mcq', question_text: qText, topic_tag: topic || 'مباحث الدرس', options: [opt1, opt2, opt3, opt4].filter(Boolean), correct_option: opt1, explanation: exp, points });
+        const opt1 = (row.querySelector('.q-opt1')?.value || '').trim();
+        const opt2 = (row.querySelector('.q-opt2')?.value || '').trim();
+        const opt3 = (row.querySelector('.q-opt3')?.value || '').trim();
+        const opt4 = (row.querySelector('.q-opt4')?.value || '').trim();
+        questions.push({ ...idField, question_type: 'mcq', question_text: qText, topic_tag: topic || 'مباحث الدرس', options: [opt1, opt2, opt3, opt4].filter(Boolean), correct_option: opt1, explanation: exp, points });
       });
       return questions;
     },
 
     async handleEditAssessmentSubmit(e, assessmentId, lessonId) {
       e.preventDefault();
-      const startVal = document.getElementById('editExamStart').value;
-      const endVal = document.getElementById('editExamEnd').value;
+      const startVal = document.getElementById('editExamStart')?.value || '';
+      const endVal = document.getElementById('editExamEnd')?.value || '';
       try {
         const res = await this.api(`/api/admin/assessments/${Number(assessmentId)}`, {
           method: 'PUT',
@@ -2247,13 +2468,16 @@ export function registerAdminMethods(proto) {
           })
         });
         this.showToast(res.message, 'success');
-        await this.loadAdminDashboard(true);
-        if (this._assessmentEditorReturnToStudio || this.adminTab === 'exams') {
-          this._assessmentEditorReturnToStudio = false;
-          this.closeModal();
-        } else {
-          await this.openLessonAssessmentsModal(lessonId);
+        const fresh = await this.api(`/api/admin/lessons/${Number(lessonId)}/assessments`);
+        const updated = (fresh.assessments || []).find((x) => x.id === Number(assessmentId));
+        if (updated) {
+          this.editingAssessment = {
+            ...updated,
+            lesson_id: Number(lessonId),
+            lesson_title: fresh.lesson_title || this.editingAssessment?.lesson_title || ''
+          };
         }
+        await this.loadAdminDashboard(true);
       } catch (err) {
         this.showToast(err.message, 'danger');
       }
@@ -2341,14 +2565,15 @@ export function registerAdminMethods(proto) {
             <div class="form-group"><label>موعد الإغلاق</label><input type="datetime-local" id="retakeEnd" class="form-control" value="${endLocal}" required /></div>
             <div class="form-group"><label>المدة (دقيقة)</label><input type="number" id="retakeDuration" class="form-control" value="15" required /></div>
           </div>
-          <div id="retakeQuestionsList" style="max-height:42vh; overflow-y:auto; margin-bottom:12px;">${this.renderAdminQuestionInputRow(1)}</div>
+          <div style="margin-bottom:14px;">
+            ${this.renderAdminQuestionsTable('retakeQuestionsList', [null], { showBulkImport: false, compact: true })}
+          </div>
           <div class="card-meta-row" style="margin-bottom:0;">
-            <button type="button" class="btn btn-outline-gold btn-sm" data-click="addMoreQuestionRow" data-container="retakeQuestionsList">${this.icon("plus", 15)} إضافة سؤال</button>
             <button type="submit" class="btn btn-gold" style="flex:1;">${this.icon("zap", 15)} اعتماد وجدولة الملحق</button>
             <button type="button" class="btn btn-danger" data-click="closeModal">إلغاء</button>
           </div>
         </form>
-      `, '740px');
+      `, '1060px');
     },
 
     async handleScheduleRetakeSubmit(e, lessonId) {
@@ -2837,13 +3062,12 @@ export function registerAdminMethods(proto) {
       let startIdx = container.querySelectorAll('.admin-q-row').length;
       for (const q of parsed) {
         startIdx += 1;
-        const div = document.createElement('div');
-        div.innerHTML = this.renderAdminQuestionInputRow(startIdx, q);
-        container.appendChild(div.firstElementChild);
+        const tr = this.createQuestionRowElement(startIdx, q);
+        container.appendChild(tr);
       }
-      if (containerId === 'adminMcqQuestionsList') this.updateExamBuilderSummary('adminMcqQuestionsList');
+      this.renumberAdminQuestionRows(container);
       this.closeModal();
-      this.showToast(`تم استيراد ${parsed.length} سؤالاً إلى الاختبار بنجاح!`, 'success');
+      this.showToast(`تم استيراد ${parsed.length} سؤالاً إلى جدول الاختبار بنجاح!`, 'success');
     },
 
     async openParentReportModal(studentId) {

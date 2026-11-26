@@ -20,7 +20,6 @@ const {
   isValidDeviceId,
   sanitizeUser
 } = require('../lib/constants');
-const { DEMO_STUDENT, shouldSeedDemoAccounts } = require('../lib/demo-seed');
 const {
   checkRateLimit,
   parseCookies,
@@ -859,17 +858,14 @@ async function handleAuthRoutes(req, res, ctx) {
     }
 
     const now = new Date().toISOString();
-    const isDevDemoStudent = shouldSeedDemoAccounts() && user.phone === DEMO_STUDENT.phone;
-    if (!user.device_id || (isDevDemoStudent && user.device_id !== deviceId)) {
+    if (!user.device_id) {
       await db.run(
         `UPDATE users SET device_id = ?, device_name = ?, device_locked_at = ?, device_reset_requested = 0 WHERE id = ?`,
         [deviceId, deviceName, now, user.id]
       );
       user.device_id = deviceId;
       user.device_name = deviceName;
-      if (!isDevDemoStudent) {
-        await recordSharedDeviceIfAny(user.id, user.full_name, user.phone, deviceId);
-      }
+      await recordSharedDeviceIfAny(user.id, user.full_name, user.phone, deviceId);
     } else if (user.device_id !== deviceId) {
       await db.run(`UPDATE users SET blocked_login_attempts = blocked_login_attempts + 1 WHERE id = ?`, [user.id]);
       await db.run(

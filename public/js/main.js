@@ -47,10 +47,14 @@ class MatnPlatformApp {
       announcement_banner: ''
     };
     this.publicStats = { studentsCount: 0, lessonsCount: 0, examsCount: 0 };
-    this.demoAccounts = null;
     this.registrationMode = 'voucher_code';
     this.landingCourseStage = 'all';
     this.mobileDrawerOpen = false;
+    try {
+      this.sidebarCollapsed = localStorage.getItem('matn_sidebar_collapsed') === '1';
+    } catch {
+      this.sidebarCollapsed = false;
+    }
     this.currentView = 'landing';
     this.studentTab = 'curriculum';
     this.selectedSubject = 'fiqh';
@@ -82,6 +86,7 @@ class MatnPlatformApp {
     this.adminExamTypeFilter = 'all';
     this.adminExamGradeFilter = 'all';
     this.adminExamQuery = '';
+    this.editingAssessment = null;
     this._lastSavedProgressSec = 0;
     this.activeAssessmentSession = null;
     this._lastAssessmentResult = null;
@@ -93,6 +98,7 @@ class MatnPlatformApp {
 
     this.initEventDelegation();
     this.initUiDeterrents();
+    this.initSidebarViewportSync();
     window.addEventListener('hashchange', () => this.applyHashRoute());
     this.bootstrap();
   }
@@ -149,6 +155,42 @@ class MatnPlatformApp {
     if (sidebar) sidebar.classList.toggle('drawer-open', this.mobileDrawerOpen);
     if (backdrop) backdrop.classList.toggle('open', this.mobileDrawerOpen);
     document.body.classList.toggle('drawer-open', this.mobileDrawerOpen);
+  }
+
+  initSidebarViewportSync() {
+    let lastVal = -1;
+    let rafId = 0;
+    const sync = () => {
+      rafId = 0;
+      const ribbon = document.querySelector('.top-ribbon');
+      let visible = 0;
+      if (ribbon && ribbon.offsetHeight > 0) {
+        const rect = ribbon.getBoundingClientRect();
+        visible = Math.max(0, Math.min(Math.round(rect.height), Math.round(rect.bottom)));
+      }
+      if (visible !== lastVal) {
+        lastVal = visible;
+        document.documentElement.style.setProperty('--ribbon-visible', `${visible}px`);
+      }
+    };
+    const schedule = () => {
+      if (!rafId) rafId = window.requestAnimationFrame(sync);
+    };
+    sync();
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule, { passive: true });
+  }
+
+  toggleDesktopSidebar() {
+    this.sidebarCollapsed = !this.sidebarCollapsed;
+    try { localStorage.setItem('matn_sidebar_collapsed', this.sidebarCollapsed ? '1' : '0'); } catch {}
+    const shell = document.querySelector('.app-shell');
+    if (shell) shell.classList.toggle('sidebar-collapsed', this.sidebarCollapsed);
+    const btn = document.querySelector('.sidebar-collapse-btn');
+    if (btn) {
+      btn.setAttribute('aria-expanded', String(!this.sidebarCollapsed));
+      btn.setAttribute('title', this.sidebarCollapsed ? 'توسيع القائمة الجانبية' : 'طي القائمة الجانبية');
+    }
   }
 
   filterLandingCourses(stage = 'all') {
@@ -291,14 +333,13 @@ class MatnPlatformApp {
         case 'toggleTheme': return this.toggleTheme();
         case 'toggleMobileSidebar': return this.toggleMobileSidebar();
         case 'closeMobileSidebar': return this.closeMobileSidebar();
+        case 'toggleDesktopSidebar': return this.toggleDesktopSidebar();
         case 'filterLandingCourses': return this.filterLandingCourses(arg || 'all');
         case 'scrollToCourses': return this.scrollToCourses();
         case 'logout': return this.logout();
         case 'closeModal': return this.closeModal();
         case 'openLoginModal': return this.openLoginPage();
         case 'openRegisterModal': return this.openRegisterPage();
-        case 'demoLogin': return this.demoLogin(arg || 'student', target);
-        case 'fillDemoLogin': return this.fillDemoLogin(arg || 'student');
         case 'toggleRequestCodePanel': return this.toggleRequestCodePanel();
         case 'requestActivationCodeViaWhatsapp': return this.requestActivationCodeViaWhatsapp();
         case 'openForgotPasswordModal': return this.openForgotPasswordPage();
@@ -355,6 +396,9 @@ class MatnPlatformApp {
         case 'addMoreQuestionRow': return this.addMoreQuestionRow(target.dataset.container || 'adminMcqQuestionsList', target.dataset.qtype || 'mcq');
         case 'duplicateQuestionRow': return this.duplicateQuestionRow(target);
         case 'removeAdminQuestionRow': return this.removeAdminQuestionRow(target);
+        case 'moveQuestionRow': return this.moveQuestionRow(target, target.dataset.dir || 'up');
+        case 'setTfQuestionAnswer': return this.setTfQuestionAnswer(target, target.dataset.val || 'صح');
+        case 'closeInlineAssessmentEditor': return this.closeInlineAssessmentEditor();
         case 'openScheduleRetakeModal': return this.openScheduleRetakeModal(id);
         case 'verifyStudentWhatsappManually': return this.verifyStudentWhatsappManually(id);
         case 'resetStudentDevice': return this.resetStudentDevice(id);
@@ -521,7 +565,10 @@ class MatnPlatformApp {
           }
         }, 140);
       } else if (target.dataset.input === 'updateExamBuilderSummary') {
-        this.updateExamBuilderSummary(target.dataset.container || 'adminMcqQuestionsList');
+        const containerId = target.dataset.container || target.closest('tbody')?.id || 'adminMcqQuestionsList';
+        this.updateExamBuilderSummary(containerId);
+      } else if (target.dataset.input === 'filterInlineQuestions') {
+        this.filterInlineQuestionsTable(target.dataset.container || 'adminMcqQuestionsList', target.value);
       }
     });
   }
@@ -807,7 +854,6 @@ class MatnPlatformApp {
         this.syncPublicBrandingElements();
       }
       if (pub && pub.stats) this.publicStats = pub.stats;
-      if (pub && pub.demo_accounts) this.demoAccounts = pub.demo_accounts;
       if (pub && pub.registration_mode) this.registrationMode = pub.registration_mode;
     } catch {}
 

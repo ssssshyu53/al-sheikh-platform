@@ -9,7 +9,8 @@
   "dependencies": {
     "@dawod/thmanyah-font-web": "^1.2.0",
     "mysql2": "^3.11.0",
-    "pdfjs-dist": "3.11.174"
+    "pdfjs-dist": "3.11.174",
+    "sql.js": "^1.17.0"
   },
   "scripts": {
     "start": "node server.js",

@@ -1,12 +1,11 @@
 const { db } = require('../database');
 const { HAS_WHATSAPP_GATEWAY, ALLOW_UNVERIFIED_REGISTRATION } = require('../lib/constants');
-const { getPublicDemoAccountsPayload } = require('../lib/demo-seed');
 const { sendJson } = require('../middleware/security');
 
 async function handlePublicRoutes(req, res, ctx) {
   const { pathname } = ctx;
 
-  if (pathname === '/api/health' && req.method === 'GET') {
+  if ((pathname === '/api/health' || pathname === '/health' || pathname === '/healthz') && req.method === 'GET') {
     try {
       const row = await db.get('SELECT 1 AS ok');
       if (!row || Number(row.ok) !== 1) throw new Error('DB check failed');
@@ -49,12 +48,10 @@ async function handlePublicRoutes(req, res, ctx) {
       lessonsCount: lessonsRow?.c || 0,
       examsCount: examsRow?.c || 0
     };
-    const demoAccounts = getPublicDemoAccountsPayload();
     sendJson(req, res, 200, {
       settings,
       stats,
-      registration_mode: registrationMode,
-      ...(demoAccounts ? { demo_accounts: demoAccounts } : {})
+      registration_mode: registrationMode
     });
     return true;
   }
