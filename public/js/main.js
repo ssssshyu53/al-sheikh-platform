@@ -78,6 +78,10 @@ class MatnPlatformApp {
     this.adminStudentsFilter = 'all';
     this.adminVouchersQuery = '';
     this.adminVouchersFilter = 'all';
+    this.adminExamSubTab = 'list';
+    this.adminExamTypeFilter = 'all';
+    this.adminExamGradeFilter = 'all';
+    this.adminExamQuery = '';
     this._lastSavedProgressSec = 0;
     this.activeAssessmentSession = null;
     this._lastAssessmentResult = null;
@@ -337,15 +341,19 @@ class MatnPlatformApp {
         case 'submitAssessment': return this.submitAssessment();
         case 'viewSubmissionReview': return this.viewSubmissionReview(id);
         case 'switchAdminTab': { this.closeMobileSidebar(); return this.switchAdminTab(arg); }
+        case 'openAdminTabGuide': return this.openAdminTabGuide(arg || this.adminTab);
+        case 'switchAdminExamSubTab': return this.switchAdminExamSubTab(arg || 'list');
+        case 'openAssessmentEditorDirect': return this.openAssessmentEditorDirect(id, Number(target.dataset.lessonId));
         case 'loadAdminDashboard': return this.loadAdminDashboard(true);
         case 'openEditLessonModal': return this.openEditLessonModal(id);
         case 'toggleLessonPublish': return this.toggleLessonPublish(id, Number(target.dataset.next));
         case 'openLessonAssessmentsModal': return this.openLessonAssessmentsModal(id);
         case 'deleteLesson': return this.deleteLesson(id);
-        case 'toggleAssessmentActive': return this.toggleAssessmentActive(id, Number(target.dataset.next), Number(target.dataset.lessonId));
+        case 'toggleAssessmentActive': return this.toggleAssessmentActive(id, Number(target.dataset.next), Number(target.dataset.lessonId), target.dataset.source || '');
         case 'openEditAssessmentModal': return this.openEditAssessmentModal(id, Number(target.dataset.lessonId));
-        case 'deleteAssessment': return this.deleteAssessment(id, Number(target.dataset.lessonId));
-        case 'addMoreQuestionRow': return this.addMoreQuestionRow(target.dataset.container || 'adminMcqQuestionsList');
+        case 'deleteAssessment': return this.deleteAssessment(id, Number(target.dataset.lessonId), target.dataset.source || '');
+        case 'addMoreQuestionRow': return this.addMoreQuestionRow(target.dataset.container || 'adminMcqQuestionsList', target.dataset.qtype || 'mcq');
+        case 'duplicateQuestionRow': return this.duplicateQuestionRow(target);
         case 'removeAdminQuestionRow': return this.removeAdminQuestionRow(target);
         case 'openScheduleRetakeModal': return this.openScheduleRetakeModal(id);
         case 'verifyStudentWhatsappManually': return this.verifyStudentWhatsappManually(id);
@@ -450,6 +458,12 @@ class MatnPlatformApp {
         }
         case 'changeVideoSpeed': return this.changeVideoSpeed(target.value);
         case 'onAdminQuestionTypeChange': return this.onAdminQuestionTypeChange(target);
+        case 'filterAdminExamsType':
+          this.adminExamTypeFilter = target.value || 'all';
+          return this.renderAdminDashboard();
+        case 'filterAdminExamsGrade':
+          this.adminExamGradeFilter = target.value || 'all';
+          return this.renderAdminDashboard();
         case 'onSelectRegisteredStudentForVoucher': return this.onSelectRegisteredStudentForVoucher(target);
         case 'onQuickVoucherFieldChange': return this.onQuickVoucherFieldChange();
         default: break;
@@ -495,6 +509,19 @@ class MatnPlatformApp {
         this._adminVouchersSearchTimer = setTimeout(() => {
           this.loadAdminDashboard(true, 'adminVouchersSearchInput');
         }, 280);
+      } else if (target.dataset.input === 'searchAdminExams') {
+        this.adminExamQuery = target.value;
+        clearTimeout(this._adminExamsSearchTimer);
+        this._adminExamsSearchTimer = setTimeout(() => {
+          this.renderAdminDashboard();
+          const el = document.getElementById('adminExamsSearchInput');
+          if (el) {
+            el.focus();
+            try { el.setSelectionRange(el.value.length, el.value.length); } catch {}
+          }
+        }, 140);
+      } else if (target.dataset.input === 'updateExamBuilderSummary') {
+        this.updateExamBuilderSummary(target.dataset.container || 'adminMcqQuestionsList');
       }
     });
   }

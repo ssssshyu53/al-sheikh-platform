@@ -1,7 +1,202 @@
 import { SUBJECTS_META, GRADES_META, BRANCHES_META } from './constants.js';
 
+const ADMIN_TAB_GUIDES = {
+  lessons_list: {
+    icon: 'book',
+    title: 'المحاضرات والإحصائيات',
+    subtitle: 'نظرة عامة على إحصائيات المنصة وإدارة جميع المحاضرات والمذكرات المنشورة.',
+    steps: [
+      { title: 'متابعة الإحصائيات الفورية', desc: 'راجع بطاقات الأرقام في الأعلى والرسوم البيانية لمتابعة نمو الاشتراكات ونسب إتمام المحاضرات.' },
+      { title: 'تصفية المحاضرات حسب الصف', desc: 'استخدم قائمة التصفية لاختيار صف أزهري محدد (إعدادي أو ثانوي) والوصول السريع لمحاضراته.' },
+      { title: 'معاينة وتعديل المحاضرة', desc: 'اضغط على «معاينة» لمشاهدة الفيديو والمذكرة كما يراهما الطالب، أو «تعديل» لتحديث العنوان والوحدة والترتيب.' },
+      { title: 'إدارة النشر والاختبارات', desc: 'تحكم في إظهار أو إخفاء المحاضرة عن الطلاب، أو افتح نافذة اختباراتها المرتبطة مباشرة.' }
+    ],
+    tip: 'إخفاء محاضرة مؤقتاً يحجبها عن الطلاب فوراً دون حذف الفيديو أو المذكرة أو نتائج الامتحانات السابقة.'
+  },
+  add_lesson: {
+    icon: 'plus',
+    title: 'رفع محاضرة ومذكرة جديدة',
+    subtitle: 'إضافة درس جديد مع فيديو الشرح المحمي ومذكرة PDF في خطوات منظمة.',
+    steps: [
+      { title: 'تحديد البيانات الأساسية', desc: 'أدخل عنوان المحاضرة، واختر الصف الدراسي والمادة الشرعية والشعبة (علمي / أدبي / عام) وترتيب الحصة.' },
+      { title: 'رفع فيديو الشرح', desc: 'اختر ملف MP4 أو WebM من جهازك ليُرفع تلقائياً على أجزاء مع شريط التقدم، أو اختر فيديو مرفوعاً مسبقاً.' },
+      { title: 'إرفاق المذكرة (PDF)', desc: 'ارفع ملف المذكرة بصيغة PDF ليُعرض للطلاب داخل قارئ المنصة المحمي بالعلامة المائية.' },
+      { title: 'الحفظ والنشر الفوري', desc: 'اضغط على «حفظ ونشر المحاضرة والمذكرة» لتظهر فوراً في بوابة الطلاب ضمن الصف والمادة المحددين.' }
+    ],
+    tip: 'تأكد من ضبط «ترتيب الحصة» بالتسلسل الصحيح حتى يعمل نظام فتح الحصص التدريجي (اجتياز امتحان الحصة السابقة) بدقة.'
+  },
+  exams: {
+    icon: 'file-text',
+    title: 'استوديو الامتحانات والواجبات',
+    subtitle: 'عرض وإدارة جميع الامتحانات والواجبات الحالية، وبناء اختبارات جديدة باحترافية.',
+    steps: [
+      { title: 'استعراض وتصفية الامتحانات الحالية', desc: 'من تبويب «عرض وإدارة الامتحانات» يمكنك البحث بالاسم، أو التصفية حسب النوع (امتحان أساسي، واجب، ملحق) أو الصف.' },
+      { title: 'تعديل أو تفعيل أو إخفاء أي اختبار', desc: 'اضغط «تعديل الأسئلة والبيانات» لتحديث أي سؤال أو درجة أو موعد، أو زر «إخفاء / تفعيل» للتحكم الفوري في ظهوره.' },
+      { title: 'إنشاء امتحان أو واجب جديد', desc: 'انتقل إلى «إنشاء امتحان أو واجب جديد»، اختر المحاضرة المرتبطة وحدد نوع الاختبار والمدة ومواعيد الفتح والإغلاق.' },
+      { title: 'بناء الأسئلة أو استيرادها دفعة واحدة', desc: 'أضف أسئلة «اختيار من متعدد» أو «صح أم خطأ» مع تحديد الإجابة الصحيحة في الخانة الخضراء (وتُخلط تلقائياً للطلاب)، أو استخدم الاستيراد الجماعي.' }
+    ],
+    tip: 'عند تحديد «موعد إغلاق» للاختبار، تُحجب الإجابات النموذجية عن الطلاب تلقائياً حتى انتهاء الموعد لمنع تسريب الأسئلة.'
+  },
+  live_sessions: {
+    icon: 'radio',
+    title: 'إدارة الحصص المباشرة (البث الحي)',
+    subtitle: 'جدولة حصص البث المباشر على زووم أو يوتيوب ومتابعة كشوف حضور الطلاب.',
+    steps: [
+      { title: 'إدخال تفاصيل الحصة المباشرة', desc: 'حدد عنوان البث، الصف، المادة، الشعبة، وموعد البدء، ثم الصق رابط البث (Zoom / Google Meet / YouTube).' },
+      { title: 'نشر موعد الحصة', desc: 'اضغط «جدولة الحصة» لتظهر تلقائياً للطلاب المستهدفين في تبويب الحصص المباشرة.' },
+      { title: 'تحديث حالة البث المباشر', desc: 'عند بدء الحصة اضغط «بدء البث الآن» ليظهر زر الانضمام الفوري للطلاب، وبعد الانتهاء اضغط «إنهاء البث».' },
+      { title: 'مراجعة كشف الحضور', desc: 'اضغط على «سجل الحضور» لمعرفة أسماء وأرقام الطلاب الذين انضموا للبث ووقت دخول كل طالب.' }
+    ],
+    tip: 'تحديث حالة الحصة إلى «مباشر الآن» يُبرزها تلقائياً في بوابة الطالب لسرعة الدخول.'
+  },
+  students: {
+    icon: 'users',
+    title: 'الطلاب والحسابات والأجهزة',
+    subtitle: 'إدارة حسابات الطلاب المسجلين، الاشتراكات، فك ارتباط الأجهزة، وتقارير أولياء الأمور.',
+    steps: [
+      { title: 'البحث والتصفية السريعة', desc: 'ابحث باسم الطالب أو رقم هاتفه، أو استخدم قائمة الحالة لعرض المشتركين النشطين أو المنتهية اشتراكاتهم أو طالبي تغيير الجهاز.' },
+      { title: 'تفعيل الاشتراك أو منحه شهراً', desc: 'يمكنك منح أي طالب اشتراكاً لمدة ٣٠ يوماً بنقرة واحدة، أو توثيق رقم الواتساب الخاص به يدوياً.' },
+      { title: 'فك ارتباط الجهاز أو تغيير كلمة المرور', desc: 'عند تبديل الطالب لهاتفه اضغط «فك ارتباط الجهاز»، أو عيّن له كلمة مرور مؤقتة في حالة نسيانها.' },
+      { title: 'إيقاف الحساب أو إرسال تقرير ولي الأمر', desc: 'يمكنك تجميد أي حساب مخالف مؤقتاً، أو فتح تقرير الطالب وإرساله مباشرة لولي الأمر عبر واتساب.' }
+    ],
+    tip: 'تصفية «ينتهي خلال ٣ أيام» تساعدك على تذكير الطلاب قبل انقطاع اشتراكهم.'
+  },
+  retakes: {
+    icon: 'alert-triangle',
+    title: 'الراسبون وامتحانات الملحق',
+    subtitle: 'متابعة الطلاب الحاصلين على ٥٠٪ فأقل وجدولة امتحانات الإعادة لفتح الحصة التالية.',
+    steps: [
+      { title: 'مراجعة قائمة الطلاب الراسبين', desc: 'تظهر هنا تلقائياً جميع المحاولات التي لم تتجاوز نسبة النجاح المطلوبة مع عرض الدرجة ونقاط الضعف.' },
+      { title: 'جدولة امتحان ملحق (إعادة)', desc: 'اضغط «جدولة امتحان ملحق» بجانب الطالب لإنشاء اختبار إعادة مؤقت بموعد فتح وإغلاق محدد.' },
+      { title: 'إبلاغ ولي الأمر فوراً', desc: 'اضغط «إبلاغ ولي الأمر» لفتح رسالة واتساب جاهزة بدرجة الطالب ومباحث الضعف.' }
+    ],
+    tip: 'بمجرد اجتياز الطالب لامتحان الملحق بنجاح، يُفتح له الدرس التالي تلقائياً في المنهج.'
+  },
+  questions: {
+    icon: 'help-circle',
+    title: 'أسئلة الطلاب والردود الشرعية',
+    subtitle: 'استقبال استفسارات الطلاب على المحاضرات والإجابة عليها مع التحكم في النشر.',
+    steps: [
+      { title: 'استعراض الأسئلة الواردة', desc: 'يظهر كل سؤال مع اسم الطالب والمحاضرة المرتبطة به وحالته (بانتظار الرد أو تمت الإجابة).' },
+      { title: 'كتابة الإجابة الشرعية', desc: 'اكتب ردك الواضح في مربع الإجابة المخصص أسفل السؤال.' },
+      { title: 'اختيار خصوصية النشر وحفظ الرد', desc: 'فعّل خيار النشر لكي يستفيد بقية طلاب المحاضرة من السؤال والإجابة، أو اتركه خاصاً بالطالب السائل ثم اضغط حفظ.' }
+    ],
+    tip: 'نشر الأسئلة الشائعة والإجابات النموذجية يقلل تكرار الاستفسارات ويثري فهم جميع طلاب الصف.'
+  },
+  weekly_reports: {
+    icon: 'calendar',
+    title: 'تقارير متابعة الجمعة لأولياء الأمور',
+    subtitle: 'تجهيز وإرسال تقارير الأداء الأسبوعية لأولياء الأمور طالباً تلو الآخر.',
+    steps: [
+      { title: 'توليد تقارير الأسبوع', desc: 'اضغط «توليد / تحديث تقارير الأسبوع» لتجميع حصص الطالب ودرجاته في امتحانات الأسبوع تلقائياً.' },
+      { title: 'مراجعة نص التقرير الجاهز', desc: 'تظهر بطاقة «الطالب التالي في الدور» مع معاينة كاملة لنص رسالة ولي الأمر.' },
+      { title: 'الإرسال المتتابع عبر واتساب', desc: 'اضغط «إرسال الآن والانتقال للطالب التالي» ليُفتح واتساب بالرسالة جاهزة وتنتقل القائمة تلقائياً للطالب الذي يليه.' },
+      { title: 'نسخ جميع التقارير دفعة واحدة', desc: 'يمكنك أيضاً نسخ كامل التقارير النصية للاحتفاظ بنسخة أرشيفية أو إرسالها جماعياً.' }
+    ],
+    tip: 'في حال ربط بوابة الواتساب الآلية على الخادم، تُرسل التقارير تلقائياً كل يوم جمعة الساعة ٣:٠٠ عصراً دون تدخل يدوي.'
+  },
+  notifications: {
+    icon: 'bell',
+    title: 'إشعارات وتنبيهات الطلاب',
+    subtitle: 'إرسال تنبيهات فورية لجميع الطلاب أو لصف وشعبة محددة داخل المنصة.',
+    steps: [
+      { title: 'تحديد نوع وعنوان الإشعار', desc: 'اختر نوع التنبيه (إعلان عام، امتحان جديد، حصة مباشرة، أو تنبيه هام) واكتب عنواناً مختصراً وواضحاً.' },
+      { title: 'استهداف الصف والشعبة', desc: 'حدد «جميع الصفوف» أو صفاً أزهرياً معيناً، واختر الشعبة المستهدفة (علمي / أدبي / عام).' },
+      { title: 'كتابة النص والإرسال الفوري', desc: 'أدخل تفاصيل التنبيه واضغط «إرسال الإشعار الآن» ليظهر في جرس الإشعارات لدى كل طالب مستهدف.' },
+      { title: 'إدارة الإشعارات السابقة', desc: 'يمكنك مراجعة سجل آخر الإشعارات وحذف أي إشعار انتهت الحاجة إليه.' }
+    ],
+    tip: 'استخدم عناوين قصيرة ومحددة ليقرأها الطالب بوضوح على شاشة الهاتف.'
+  },
+  vouchers: {
+    icon: 'ticket',
+    title: 'كروت الشحن والرد السريع',
+    subtitle: 'توليد أكواد الاشتراك الشهرية، طباعتها، وتسليمها للطلاب عبر واتساب بسرعة فائقة.',
+    steps: [
+      { title: 'توليد دفعة أكواد جديدة', desc: 'حدد عدد الكروت ومدة الاشتراك (بالأيام) ودفعة التسمية، ثم اضغط «توليد الكروت».' },
+      { title: 'أداة الرد السريع على رسائل الطلاب', desc: 'الصق رسالة الطالب الواردة على واتساب لتتعرف المنصة تلقائياً على اسمه وهاتفه وتجهز له كوداً غير مستخدم مع رسالة ترحيب جاهزة.' },
+      { title: 'البحث والتصفية والطباعة', desc: 'ابحث عن أي كود لمعرفة حالته (متاح / محجوز / مستخدم) ومن قام بشحنه، أو اضغط «طباعة الكروت» لإصدار كروت ورقية.' }
+    ],
+    tip: 'إذا تم حجز كود لطالب ولم يكمل الدفع، اضغط «تحرير الكود» لإعادته متاحاً فوراً دون فقدانه.'
+  },
+  security: {
+    icon: 'shield',
+    title: 'الحماية وسجلات التدقيق',
+    subtitle: 'مراقبة محاولات الدخول، التنبيهات الأمنية، وسجل جميع العمليات الإدارية الحساسة.',
+    steps: [
+      { title: 'فحص التنبيهات الأمنية', desc: 'راقب أي تنبيه أحمر يظهر عند تكرار محاولات دخول فاشلة لحماية حسابات المنصة.' },
+      { title: 'مراجعة سجل التدقيق (Audit Log)', desc: 'يعرض الجدول تفاصيل كل عملية حساسة (إنشاء كروت، تعديل محاضرة، فك جهاز، حذف حساب) مع التوقيت وعنوان الـ IP.' },
+      { title: 'اتخاذ الإجراء الوقائي', desc: 'عند ملاحظة نشاط مريب على حساب طالب، انتقل إلى تبويب «الطلاب والأجهزة» لإيقاف الحساب أو تصفير جلسته فوراً.' }
+    ],
+    tip: 'حافظ دائماً على اختلاف رقم واتساب الدعم الظاهر للطلاب عن رقم هاتف حساب الأدمن.'
+  },
+  settings: {
+    icon: 'settings',
+    title: 'إعدادات المنصة والتواصل',
+    subtitle: 'ضبط هوية المنصة، بيانات الدفع، أرقام الدعم، والشريط الإخباري العلوي.',
+    steps: [
+      { title: 'تحديث بيانات المنصة والأستاذ', desc: 'راجع اسم المنصة واسم فضيلة الأستاذ والشريط الترحيبي الذي يظهر أعلى الموقع.' },
+      { title: 'ضبط رقم واتساب الدعم وطرق الدفع', desc: 'أدخل رقم واتساب خدمة الطلاب، ورقم فودافون كاش، وحساب إنستاباي لتظهر بوضوح للطلاب عند الاشتراك.' },
+      { title: 'موعد امتحانات الأزهر الشريف', desc: 'حدد تاريخ بداية الامتحانات لتشغيل العدّاد التنازلي التحفيزي داخل لوحة الطالب.' },
+      { title: 'حفظ التغييرات', desc: 'اضغط «حفظ الإعدادات» لتُطبق التعديلات فوراً في الصفحة الرئيسية وبوابة الطلاب.' }
+    ],
+    tip: 'احرص على كتابة رقم واتساب الدعم بصيغة مصرية صحيحة (مثال: 010xxxxxxxx) لتعمل روابط المراسلة المباشرة بسلاسة.'
+  }
+};
+
 export function registerAdminMethods(proto) {
   Object.assign(proto, {
+    getAdminTabGuide(tabKey) {
+      return ADMIN_TAB_GUIDES[tabKey] || ADMIN_TAB_GUIDES.lessons_list;
+    },
+
+    openAdminTabGuide(tabKey = this.adminTab) {
+      const g = this.getAdminTabGuide(tabKey || this.adminTab);
+      const arNums = ['١', '٢', '٣', '٤', '٥', '٦'];
+      this.openModal(`
+        <div class="guide-modal-header">
+          <div class="guide-modal-title-wrap">
+            <span class="guide-modal-icon">${this.icon(g.icon, 20)}</span>
+            <div>
+              <h3 class="guide-modal-title">دليل استخدام: ${this.esc(g.title)}</h3>
+              <p class="guide-modal-sub">${this.esc(g.subtitle)}</p>
+            </div>
+          </div>
+          <button type="button" class="btn btn-danger btn-sm" data-click="closeModal" aria-label="إغلاق الدليل">${this.icon('x', 15)} <span>إغلاق</span></button>
+        </div>
+
+        <ol class="guide-steps-list">
+          ${g.steps.map((step, i) => `
+            <li class="guide-step-card">
+              <span class="guide-step-num" aria-hidden="true">${arNums[i] || (i + 1)}</span>
+              <div class="guide-step-body">
+                <strong>${this.esc(step.title)}</strong>
+                <p>${this.esc(step.desc)}</p>
+              </div>
+            </li>
+          `).join('')}
+        </ol>
+
+        ${g.tip ? `
+          <div class="guide-tip-box">
+            <span class="guide-tip-icon">${this.icon('sparkles', 17)}</span>
+            <div>
+              <strong>نصيحة سريعة:</strong>
+              <span>${this.esc(g.tip)}</span>
+            </div>
+          </div>
+        ` : ''}
+
+        <div style="margin-top:16px; display:flex; justify-content:flex-end;">
+          <button type="button" class="btn btn-gold" data-click="closeModal">${this.icon('check-circle', 15)} <span>فهمت، العودة للعمل</span></button>
+        </div>
+      `, '640px');
+    },
+
+    switchAdminExamSubTab(subTab = 'list') {
+      this.adminExamSubTab = subTab === 'create' ? 'create' : 'list';
+      this.renderAdminDashboard();
+    },
+
     async loadAdminDashboard(silent = false, restoreFocusId = null) {
       this.currentView = 'admin_dashboard';
       const root = document.getElementById('appRoot');
@@ -58,6 +253,8 @@ export function registerAdminMethods(proto) {
       const totalVouchers = Number(d.vouchers_total ?? d.vouchers.length);
       const pendingQuestions = Number(d.pending_questions_count || 0);
       const liveSessionsCount = (d.live_sessions || []).length;
+      const totalAssessmentsCount = (d.lessons || []).reduce((acc, l) => acc + ((l.assessments && l.assessments.length) || 0), 0);
+      const activeGuide = this.getAdminTabGuide(this.adminTab);
 
       this.mobileDrawerOpen = false;
       document.body.classList.remove('drawer-open');
@@ -96,7 +293,8 @@ export function registerAdminMethods(proto) {
                   </button>
                   <button type="button" class="sidebar-link ${this.adminTab === 'exams' ? 'active' : ''}" data-click="switchAdminTab" data-arg="exams">
                     <span class="nav-icon">${this.icon('file-text', 17)}</span>
-                    <span class="sidebar-link-label">إنشاء امتحان أو واجب</span>
+                    <span class="sidebar-link-label">الامتحانات والواجبات</span>
+                    <span class="sidebar-count">${totalAssessmentsCount}</span>
                   </button>
                   <button type="button" class="sidebar-link ${this.adminTab === 'live_sessions' ? 'active' : ''}" data-click="switchAdminTab" data-arg="live_sessions">
                     <span class="nav-icon">${this.icon('radio', 17)}</span>
@@ -162,20 +360,20 @@ export function registerAdminMethods(proto) {
 
           <section class="app-main">
             ${d.admin_phone_matches_support ? `
-              <div class="section-card no-print" style="border-color:var(--warning); background:rgba(196,154,58,0.12); padding:12px 16px; margin-bottom:16px;">
-                <div style="font-weight:700; color:var(--warning-text); font-size:0.88rem; display:flex; align-items:center; gap:8px;">
+              <div class="admin-alert-warning no-print">
+                <div class="admin-alert-title">
                   ${this.icon('alert-triangle', 17)}
                   <span>تحذير أمني: رقم واتساب الدعم الظاهر للطلاب مطابق لرقم دخول الأدمن (${this.esc(this.user.phone)})! يُنصح بتغييره من تبويب «إعدادات المنصة».</span>
                 </div>
               </div>
             ` : ''}
             ${(d.admin_security_alerts || []).length > 0 ? `
-              <div class="section-card no-print" style="border-color:#f43f5e; background:rgba(136,19,55,0.28); padding:12px 16px; margin-bottom:16px;">
-                <div style="font-weight:800; color:var(--danger-text); font-size:0.88rem; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
+              <div class="admin-alert-danger no-print">
+                <div class="admin-alert-title">
                   ${this.icon('alert-triangle', 17)}
                   <span>تنبيه أمني خلال آخر ٢٤ ساعة (${d.admin_security_alerts.length}): تم رصد محاولات دخول فاشلة متكررة!</span>
                 </div>
-                <div style="font-size:0.8rem; color:var(--text-secondary);">
+                <div class="admin-alert-desc">
                   ${this.esc(d.admin_security_alerts[0].details || '')} — راجع تبويب «الحماية والسجلات» للتفاصيل.
                 </div>
               </div>
@@ -184,9 +382,9 @@ export function registerAdminMethods(proto) {
               <div class="mobile-admin-tabs no-print" role="navigation" aria-label="تبويبات الإدارة">
                 <button class="mobile-admin-chip ${this.adminTab === 'lessons_list' ? 'active' : ''}" data-click="switchAdminTab" data-arg="lessons_list">المحاضرات</button>
                 <button class="mobile-admin-chip ${this.adminTab === 'add_lesson' ? 'active' : ''}" data-click="switchAdminTab" data-arg="add_lesson">رفع محاضرة</button>
+                <button class="mobile-admin-chip ${this.adminTab === 'exams' ? 'active' : ''}" data-click="switchAdminTab" data-arg="exams">الامتحانات</button>
                 <button class="mobile-admin-chip ${this.adminTab === 'live_sessions' ? 'active' : ''}" data-click="switchAdminTab" data-arg="live_sessions">الحصص المباشرة</button>
                 <button class="mobile-admin-chip ${this.adminTab === 'notifications' ? 'active' : ''}" data-click="switchAdminTab" data-arg="notifications">الإشعارات</button>
-                <button class="mobile-admin-chip ${this.adminTab === 'exams' ? 'active' : ''}" data-click="switchAdminTab" data-arg="exams">الامتحانات</button>
                 <button class="mobile-admin-chip ${this.adminTab === 'retakes' ? 'active' : ''}" data-click="switchAdminTab" data-arg="retakes">الراسبون</button>
                 <button class="mobile-admin-chip ${this.adminTab === 'students' ? 'active' : ''}" data-click="switchAdminTab" data-arg="students">الطلاب</button>
                 <button class="mobile-admin-chip ${this.adminTab === 'vouchers' ? 'active' : ''}" data-click="switchAdminTab" data-arg="vouchers">الأكواد</button>
@@ -194,6 +392,20 @@ export function registerAdminMethods(proto) {
                 <button class="mobile-admin-chip ${this.adminTab === 'questions' ? 'active' : ''}" data-click="switchAdminTab" data-arg="questions">أسئلة الطلاب</button>
                 <button class="mobile-admin-chip ${this.adminTab === 'security' ? 'active' : ''}" data-click="switchAdminTab" data-arg="security">الحماية</button>
                 <button class="mobile-admin-chip ${this.adminTab === 'settings' ? 'active' : ''}" data-click="switchAdminTab" data-arg="settings">الإعدادات</button>
+              </div>
+
+              <div class="admin-page-topbar no-print">
+                <div class="admin-page-topbar-info">
+                  <span class="admin-page-topbar-icon">${this.icon(activeGuide.icon, 20)}</span>
+                  <div class="admin-page-topbar-text">
+                    <h2>${this.esc(activeGuide.title)}</h2>
+                    <p>${this.esc(activeGuide.subtitle)}</p>
+                  </div>
+                </div>
+                <button type="button" class="admin-help-btn" data-click="openAdminTabGuide" data-arg="${this.esc(this.adminTab)}" title="عرض خطوات شرح هذه الصفحة" aria-label="شرح الصفحة الحالية">
+                  ${this.icon('help-circle', 17)}
+                  <span>شرح الصفحة</span>
+                </button>
               </div>
             `}
             ${this.activeLessonId ? this.renderUnifiedLessonWorkspace(this.activeLessonId) : this.renderActiveAdminTab()}
@@ -236,8 +448,8 @@ export function registerAdminMethods(proto) {
                   <rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${barH.toFixed(1)}" rx="6" fill="var(--emerald-accent)">
                     <title>${this.esc(g.ym)}: ${cnt} اشتراك</title>
                   </rect>
-                  <text x="${(x + barW / 2).toFixed(1)}" y="${(y - 6).toFixed(1)}" font-size="11" font-weight="bold" text-anchor="middle" fill="var(--gold-300)">${cnt}</text>
-                  <text x="${(x + barW / 2).toFixed(1)}" y="165" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.72">${this.esc(g.ym)}</text>
+                  <text x="${(x + barW / 2).toFixed(1)}" y="${(y - 6).toFixed(1)}" font-size="11" font-weight="bold" text-anchor="middle" fill="var(--text-primary)">${cnt}</text>
+                  <text x="${(x + barW / 2).toFixed(1)}" y="165" font-size="10" font-weight="600" text-anchor="middle" fill="var(--text-secondary)">${this.esc(g.ym)}</text>
                 </g>
               `;
             }).join('')}
@@ -463,8 +675,11 @@ export function registerAdminMethods(proto) {
                   </div>
                 ` : `<input type="hidden" id="newLessonVideoType" value="upload" />`}
 
-                <div id="localVideoHlsWarning" style="background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.45); color:#fde68a; border-radius:10px; padding:10px 12px; margin-bottom:14px; font-size:0.8rem;">
-                  ${this.icon("alert-triangle", 15)} <b>ملاحظة للإنتاج:</b> البث المحلي لا يدعم تعدد الجودات (HLS)؛ يُنصح بتفعيل <b>Bunny Stream</b> في ملف <code>.env</code> عند وجود ضغط طلاب عالٍ.
+                <div id="localVideoHlsWarning" class="admin-alert-warning" style="margin-bottom:14px;">
+                  <div class="admin-alert-title">
+                    ${this.icon('alert-triangle', 15)}
+                    <span><b>ملاحظة للإنتاج:</b> البث المحلي لا يدعم تعدد الجودات (HLS)؛ يُنصح بتفعيل <b>Bunny Stream</b> في ملف <code>.env</code> عند وجود ضغط طلاب عالٍ.</span>
+                  </div>
                 </div>
 
                 <div class="grid-2" style="margin-bottom:16px;" id="localVideoUploadGroup">
@@ -474,7 +689,7 @@ export function registerAdminMethods(proto) {
                     <input type="file" id="videoFileUploadInput" accept="video/mp4,video/webm" class="form-control" data-change="uploadAdminFile" data-upload-type="video" />
                     <input type="hidden" id="uploadedVideoPath" value="" />
                     <div id="videoProgressWrap" style="display:none; margin-top:10px;">
-                      <div style="width:100%; height:10px; background:rgba(255,255,255,0.12); border-radius:99px; overflow:hidden;">
+                      <div style="width:100%; height:10px; background:var(--border-strong); border-radius:99px; overflow:hidden;">
                         <div id="videoProgressBar" style="width:0%; height:100%; background:linear-gradient(90deg, var(--gold-400), #10b981); transition:width 0.2s;"></div>
                       </div>
                     </div>
@@ -493,7 +708,7 @@ export function registerAdminMethods(proto) {
                     <input type="file" id="pdfFileUploadInput" accept="application/pdf,.pdf" class="form-control" data-change="uploadAdminFile" data-upload-type="pdf" />
                     <input type="hidden" id="uploadedPdfPath" value="" />
                     <div id="pdfProgressWrap" style="display:none; margin-top:10px;">
-                      <div style="width:100%; height:10px; background:rgba(255,255,255,0.12); border-radius:99px; overflow:hidden;">
+                      <div style="width:100%; height:10px; background:var(--border-strong); border-radius:99px; overflow:hidden;">
                         <div id="pdfProgressBar" style="width:0%; height:100%; background:linear-gradient(90deg, var(--gold-400), #10b981); transition:width 0.2s;"></div>
                       </div>
                     </div>
@@ -682,66 +897,277 @@ export function registerAdminMethods(proto) {
       }
 
       if (this.adminTab === 'exams') {
+        const typeLabelMap = {
+          exam: 'امتحان أساسي',
+          homework: 'واجب منزلي',
+          retake_exam: 'امتحان ملحق'
+        };
+        const typeBadgeMap = {
+          exam: 'badge-gold',
+          homework: 'badge-success',
+          retake_exam: 'badge-warning'
+        };
+
+        const allAssessments = [];
+        for (const lesson of (d.lessons || [])) {
+          for (const a of (lesson.assessments || [])) {
+            allAssessments.push({
+              ...a,
+              lesson_title: lesson.title,
+              lesson_grade: lesson.grade,
+              lesson_subject: lesson.subject,
+              lesson_order: lesson.order_index
+            });
+          }
+        }
+        allAssessments.sort((a, b) => Number(b.id) - Number(a.id));
+
+        const activeCount = allAssessments.filter((a) => Number(a.is_active) === 1 || a.is_active === true).length;
+        const totalQuestionsAll = allAssessments.reduce((sum, a) => sum + Number(a.questions_count || 0), 0);
+        const examsCount = allAssessments.filter((a) => a.assessment_type === 'exam').length;
+        const hwCount = allAssessments.filter((a) => a.assessment_type === 'homework').length;
+        const retakeCount = allAssessments.filter((a) => a.assessment_type === 'retake_exam').length;
+
+        const qText = (this.adminExamQuery || '').trim().toLowerCase();
+        const filteredAssessments = allAssessments.filter((a) => {
+          if (this.adminExamTypeFilter !== 'all' && a.assessment_type !== this.adminExamTypeFilter) return false;
+          if (this.adminExamGradeFilter !== 'all' && a.lesson_grade !== this.adminExamGradeFilter) return false;
+          if (qText) {
+            const hay = `${a.title || ''} ${a.lesson_title || ''} ${GRADES_META[a.lesson_grade] || ''} ${this.getSubjectName(a.lesson_subject, a.lesson_grade)}`.toLowerCase();
+            if (!hay.includes(qText)) return false;
+          }
+          return true;
+        });
+
+        const subTab = this.adminExamSubTab === 'create' ? 'create' : 'list';
+        const fmtSchedule = (iso) => {
+          if (!iso) return '';
+          try {
+            return new Date(iso).toLocaleString('ar-EG', { dateStyle: 'medium', timeStyle: 'short' });
+          } catch {
+            return '';
+          }
+        };
+
         return `
           <div class="fade-in">
-            <div class="section-card">
-              <div class="section-header">
-                <h3 class="section-title">${this.icon("file-text", 15)} إنشاء واجب أو امتحان اختيار من متعدد</h3>
+            <div class="grid-4" style="margin-bottom:16px;">
+              <div class="stat-box">
+                <span class="stat-label">إجمالي الاختبارات والواجبات</span>
+                <span class="stat-value">${allAssessments.length}</span>
               </div>
-              ${d.lessons.length === 0 ? `
-                <div style="text-align:center; padding:24px;">يرجى رفع محاضرة أولاً قبل إضافة اختبار لها.</div>
-              ` : `
-                <form data-submit="handleCreateAssessment">
-                  <div class="grid-3">
-                    <div class="form-group">
-                      <label>المحاضرة المرتبط بها الاختبار</label>
-                      <select id="examLessonId" class="form-control" required>
-                        ${d.lessons.map((l) => `<option value="${Number(l.id)}">[${this.esc(GRADES_META[l.grade] || l.grade)} • ${this.esc(this.getSubjectName(l.subject, l.grade))}] ${this.esc(l.title)}</option>`).join('')}
-                      </select>
-                    </div>
-                    <div class="form-group">
-                      <label>نوع الاختبار</label>
-                      <select id="examTypeSelect" class="form-control">
-                        <option value="exam">امتحان الحصة الأساسي (النجاح فوق 50%)</option>
-                        <option value="homework">واجب الحصة</option>
-                        <option value="retake_exam">امتحان إعادة للراسبين (ملحق)</option>
-                      </select>
-                    </div>
-                    <div class="form-group">
-                      <label>المدة (دقيقة)</label>
-                      <input type="number" id="examTimeLimit" class="form-control" value="15" min="1" max="180" required />
-                    </div>
-                  </div>
-
-                  <div class="grid-3">
-                    <div class="form-group">
-                      <label>عنوان الامتحان / الواجب</label>
-                      <input type="text" id="examTitleInput" class="form-control" placeholder="مثال: امتحان المحاضرة الأولى" required />
-                    </div>
-                    <div class="form-group">
-                      <label>تاريخ الفتح (اختياري)</label>
-                      <input type="datetime-local" id="examScheduledStart" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                      <label>تاريخ الإغلاق (اختياري — يحجب الإجابات حتى انتهائه)</label>
-                      <input type="datetime-local" id="examScheduledEnd" class="form-control" />
-                    </div>
-                  </div>
-
-                  <div id="adminMcqQuestionsList" style="margin-top:16px;">
-                    ${this.renderAdminQuestionInputRow(1)}
-                  </div>
-
-                  <div class="card-meta-row" style="margin-top:14px; margin-bottom:0;">
-                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                      <button type="button" class="btn btn-outline-gold" data-click="addMoreQuestionRow" data-container="adminMcqQuestionsList">${this.icon("plus", 15)} إضافة سؤال آخر</button>
-                      <button type="button" class="btn btn-emerald" data-click="openBulkImportQuestionsModal" data-container="adminMcqQuestionsList">${this.icon("download", 14)} استيراد أسئلة دفعة واحدة</button>
-                    </div>
-                    <button type="submit" class="btn btn-gold">${this.icon("check-circle", 14)} حفظ ونشر الاختبار</button>
-                  </div>
-                </form>
-              `}
+              <div class="stat-box">
+                <span class="stat-label">مفعّلة ومتاحة للطلاب</span>
+                <span class="stat-value" style="color:var(--success-text);">${activeCount}</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-label">إجمالي الأسئلة ببنك الاختبارات</span>
+                <span class="stat-value">${totalQuestionsAll}</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-label">توزيع الأنواع</span>
+                <span class="stat-value" style="font-size:1.05rem;">${examsCount} امتحان • ${hwCount} واجب • ${retakeCount} ملحق</span>
+              </div>
             </div>
+
+            <div class="exam-studio-tabs no-print" role="tablist" aria-label="أوضاع استوديو الامتحانات">
+              <button type="button" role="tab" aria-selected="${subTab === 'list'}" class="exam-studio-tab ${subTab === 'list' ? 'active' : ''}" data-click="switchAdminExamSubTab" data-arg="list">
+                ${this.icon('clipboard', 16)}
+                <span>عرض وإدارة الامتحانات (${allAssessments.length})</span>
+              </button>
+              <button type="button" role="tab" aria-selected="${subTab === 'create'}" class="exam-studio-tab ${subTab === 'create' ? 'active' : ''}" data-click="switchAdminExamSubTab" data-arg="create">
+                ${this.icon('plus', 16)}
+                <span>إنشاء امتحان أو واجب جديد</span>
+              </button>
+            </div>
+
+            ${subTab === 'list' ? `
+              <div class="section-card">
+                <div class="exam-studio-toolbar">
+                  <div class="exam-search-wrap">
+                    <span class="exam-search-icon">${this.icon('search', 16)}</span>
+                    <input type="text" id="adminExamsSearchInput" class="form-control" placeholder="ابحث بعنوان الامتحان أو المحاضرة أو المادة..." value="${this.esc(this.adminExamQuery || '')}" data-input="searchAdminExams" />
+                  </div>
+                  <select class="form-control" data-change="filterAdminExamsType" aria-label="تصفية حسب النوع">
+                    <option value="all" ${this.adminExamTypeFilter === 'all' ? 'selected' : ''}>جميع الأنواع (${allAssessments.length})</option>
+                    <option value="exam" ${this.adminExamTypeFilter === 'exam' ? 'selected' : ''}>امتحان أساسي (${examsCount})</option>
+                    <option value="homework" ${this.adminExamTypeFilter === 'homework' ? 'selected' : ''}>واجب منزلي (${hwCount})</option>
+                    <option value="retake_exam" ${this.adminExamTypeFilter === 'retake_exam' ? 'selected' : ''}>امتحان ملحق (${retakeCount})</option>
+                  </select>
+                  <select class="form-control" data-change="filterAdminExamsGrade" aria-label="تصفية حسب الصف">
+                    ${this.renderGradeOptions(this.adminExamGradeFilter, 'جميع الصفوف')}
+                  </select>
+                  <button type="button" class="btn btn-gold" data-click="switchAdminExamSubTab" data-arg="create">
+                    ${this.icon('plus', 15)} <span>امتحان جديد</span>
+                  </button>
+                </div>
+
+                ${filteredAssessments.length === 0 ? `
+                  <div class="exam-empty-state">
+                    <div class="exam-empty-icon">${this.icon('file-text', 32)}</div>
+                    <h4>${allAssessments.length === 0 ? 'لا توجد امتحانات أو واجبات مضافة بعد' : 'لا توجد اختبارات مطابقة لخيارات البحث'}</h4>
+                    <p>${allAssessments.length === 0 ? 'ابدأ بإنشاء أول امتحان أو واجب وربطه بإحدى المحاضرات.' : 'جرّب تغيير نوع الاختبار أو الصف أو مسح كلمة البحث.'}</p>
+                    <button type="button" class="btn btn-gold" data-click="switchAdminExamSubTab" data-arg="create">${this.icon('plus', 15)} <span>إنشاء امتحان أو واجب الآن</span></button>
+                  </div>
+                ` : `
+                  <div class="exam-studio-grid">
+                    ${filteredAssessments.map((a) => {
+                      const isActive = Number(a.is_active) === 1 || a.is_active === true;
+                      const typeLabel = typeLabelMap[a.assessment_type] || a.assessment_type;
+                      const typeBadge = typeBadgeMap[a.assessment_type] || 'badge-gold';
+                      const startStr = fmtSchedule(a.scheduled_start);
+                      const endStr = fmtSchedule(a.scheduled_end);
+                      return `
+                        <article class="exam-studio-card ${isActive ? '' : 'is-hidden-exam'}">
+                          <div class="exam-card-head">
+                            <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+                              <span class="badge ${typeBadge}">${this.esc(typeLabel)}</span>
+                              <span class="badge ${isActive ? 'badge-success' : 'badge-danger'}">${isActive ? 'مفعل للطلاب' : 'مخفي'}</span>
+                            </div>
+                            <span class="exam-card-id">#${Number(a.id)}</span>
+                          </div>
+
+                          <h4 class="exam-card-title">${this.esc(a.title)}</h4>
+
+                          <div class="exam-card-lesson">
+                            ${this.icon('book', 14)}
+                            <span>${this.esc(a.lesson_title)}</span>
+                          </div>
+
+                          <div class="exam-card-meta-chips">
+                            <span>${this.icon('graduation-cap', 13)} ${this.esc(GRADES_META[a.lesson_grade] || a.lesson_grade)}</span>
+                            <span>${this.icon('bookmark', 13)} ${this.esc(this.getSubjectName(a.lesson_subject, a.lesson_grade))}</span>
+                          </div>
+
+                          <div class="exam-card-stats-row">
+                            <div class="exam-mini-stat">
+                              ${this.icon('help-circle', 14)}
+                              <strong>${Number(a.questions_count || 0)}</strong>
+                              <span>سؤال</span>
+                            </div>
+                            <div class="exam-mini-stat">
+                              ${this.icon('clock', 14)}
+                              <strong>${Number(a.time_limit_minutes || 15)}</strong>
+                              <span>دقيقة</span>
+                            </div>
+                            <div class="exam-mini-stat">
+                              ${this.icon('calendar', 14)}
+                              <span>${startStr || endStr ? 'مجدول بموعد' : 'متاح دائماً'}</span>
+                            </div>
+                          </div>
+
+                          ${(startStr || endStr) ? `
+                            <div class="exam-card-schedule">
+                              ${startStr ? `<div><strong>الفتح:</strong> ${this.esc(startStr)}</div>` : ''}
+                              ${endStr ? `<div><strong>الإغلاق:</strong> ${this.esc(endStr)}</div>` : ''}
+                            </div>
+                          ` : ''}
+
+                          <div class="exam-card-actions">
+                            <button type="button" class="btn btn-gold btn-sm" style="flex:1;" data-click="openAssessmentEditorDirect" data-id="${Number(a.id)}" data-lesson-id="${Number(a.lesson_id)}">
+                              ${this.icon('edit', 14)} <span>تعديل الأسئلة والبيانات</span>
+                            </button>
+                            <button type="button" class="btn btn-outline-gold btn-sm" data-click="toggleAssessmentActive" data-id="${Number(a.id)}" data-next="${isActive ? 0 : 1}" data-lesson-id="${Number(a.lesson_id)}" data-source="studio">
+                              ${this.icon(isActive ? 'eye-off' : 'eye', 14)} <span>${isActive ? 'إخفاء' : 'تفعيل'}</span>
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm" data-click="deleteAssessment" data-id="${Number(a.id)}" data-lesson-id="${Number(a.lesson_id)}" data-source="studio" title="حذف الاختبار نهائياً" aria-label="حذف الاختبار">
+                              ${this.icon('trash', 14)}
+                            </button>
+                          </div>
+                        </article>
+                      `;
+                    }).join('')}
+                  </div>
+                `}
+              </div>
+            ` : `
+              <div class="section-card">
+                ${d.lessons.length === 0 ? `
+                  <div class="exam-empty-state">
+                    <div class="exam-empty-icon">${this.icon('book', 32)}</div>
+                    <h4>يرجى رفع محاضرة أولاً</h4>
+                    <p>يجب وجود محاضرة واحدة على الأقل لربط الاختبار أو الواجب بها.</p>
+                    <button type="button" class="btn btn-gold" data-click="switchAdminTab" data-arg="add_lesson">${this.icon('plus', 15)} <span>الانتقال لرفع محاضرة</span></button>
+                  </div>
+                ` : `
+                  <form data-submit="handleCreateAssessment">
+                    <div class="exam-builder-step">
+                      <div class="exam-step-head">
+                        <span class="exam-step-num">١</span>
+                        <div>
+                          <h4>بيانات الاختبار والربط بالمحاضرة</h4>
+                          <p>اختر المحاضرة ونوع التقييم وحدد المدة الزمنية والمواعيد الاختيارية</p>
+                        </div>
+                      </div>
+
+                      <div class="grid-3">
+                        <div class="form-group">
+                          <label>المحاضرة المرتبط بها الاختبار</label>
+                          <select id="examLessonId" class="form-control" required>
+                            ${d.lessons.map((l) => `<option value="${Number(l.id)}">[${this.esc(GRADES_META[l.grade] || l.grade)} • ${this.esc(this.getSubjectName(l.subject, l.grade))}] ${this.esc(l.title)}</option>`).join('')}
+                          </select>
+                        </div>
+                        <div class="form-group">
+                          <label>نوع التقييم</label>
+                          <select id="examTypeSelect" class="form-control">
+                            <option value="exam">امتحان الحصة الأساسي (يشترط النجاح فوق 50%)</option>
+                            <option value="homework">واجب منزلي تدريبي</option>
+                            <option value="retake_exam">امتحان إعادة للراسبين (ملحق)</option>
+                          </select>
+                        </div>
+                        <div class="form-group">
+                          <label>المدة الزمنية (بالدقائق)</label>
+                          <input type="number" id="examTimeLimit" class="form-control" value="15" min="1" max="180" required />
+                        </div>
+                      </div>
+
+                      <div class="grid-3">
+                        <div class="form-group">
+                          <label>عنوان الامتحان / الواجب</label>
+                          <input type="text" id="examTitleInput" class="form-control" placeholder="مثال: امتحان أحكام البيوع — المحاضرة الأولى" required />
+                        </div>
+                        <div class="form-group">
+                          <label>موعد الفتح (اختياري)</label>
+                          <input type="datetime-local" id="examScheduledStart" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                          <label>موعد الإغلاق (اختياري — يحجب الإجابات حتى انتهائه)</label>
+                          <input type="datetime-local" id="examScheduledEnd" class="form-control" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="exam-builder-step">
+                      <div class="exam-step-head">
+                        <span class="exam-step-num">٢</span>
+                        <div style="flex:1;">
+                          <h4>بنك الأسئلة والإجابات النموذجية</h4>
+                          <p>اكتب الإجابة الصحيحة دائماً في الخانة الخضراء، وستقوم المنصة بخلط الاختيارات عشوائياً لكل طالب</p>
+                        </div>
+                        <div id="examBuilderMetaSummary" class="exam-summary-bar" aria-live="polite">
+                          <span><strong>1</strong> سؤال</span>
+                          <span class="exam-summary-sep">•</span>
+                          <span><strong>2</strong> درجة إجمالية</span>
+                        </div>
+                      </div>
+
+                      <div id="adminMcqQuestionsList" style="margin-top:12px;">
+                        ${this.renderAdminQuestionInputRow(1)}
+                      </div>
+
+                      <div class="exam-builder-footer">
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                          <button type="button" class="btn btn-outline-gold" data-click="addMoreQuestionRow" data-container="adminMcqQuestionsList" data-qtype="mcq">${this.icon('plus', 15)} <span>إضافة اختيار من متعدد</span></button>
+                          <button type="button" class="btn btn-outline-gold" data-click="addMoreQuestionRow" data-container="adminMcqQuestionsList" data-qtype="true_false">${this.icon('check-circle', 15)} <span>إضافة سؤال صح أم خطأ</span></button>
+                          <button type="button" class="btn btn-emerald" data-click="openBulkImportQuestionsModal" data-container="adminMcqQuestionsList">${this.icon('download', 14)} <span>استيراد أسئلة دفعة واحدة</span></button>
+                        </div>
+                        <button type="submit" class="btn btn-gold" style="padding:11px 22px;">${this.icon('check-circle', 15)} <span>حفظ ونشر الاختبار الآن</span></button>
+                      </div>
+                    </div>
+                  </form>
+                `}
+              </div>
+            `}
           </div>
         `;
       }
@@ -1161,7 +1587,7 @@ export function registerAdminMethods(proto) {
                     </div>
                     <button type="button" class="btn btn-whatsapp" data-click="sendNextSequentialWeeklyReport" data-id="${Number(nextItem.id)}">${this.icon('smartphone', 15)} <span>إرسال الآن والانتقال للطالب التالي</span></button>
                   </div>
-                  <pre style="white-space:pre-wrap; font-family:inherit; font-size:0.8rem; color:var(--text-secondary); background:rgba(0,0,0,0.22); padding:10px; border-radius:8px;">${this.esc(nextItem.report_text)}</pre>
+                  <pre class="admin-code-preview">${this.esc(nextItem.report_text)}</pre>
                 </div>
               ` : ''}
 
@@ -1347,19 +1773,27 @@ export function registerAdminMethods(proto) {
       `;
     },
 
-    renderAdminQuestionInputRow(index, existing = null) {
+    renderAdminQuestionInputRow(index, existing = null, defaultType = 'mcq') {
       const opts = existing && Array.isArray(existing.options) ? existing.options : [];
       const correct = existing ? String(existing.correct_option || '').trim() : '';
-      const inferredTf = existing && (existing.question_type === 'true_false' || (opts.length === 2 && opts.includes('صح') && opts.includes('خطأ')));
+      const inferredTf = existing
+        ? (existing.question_type === 'true_false' || (opts.length === 2 && opts.includes('صح') && opts.includes('خطأ')))
+        : (defaultType === 'true_false');
       const qType = inferredTf ? 'true_false' : 'mcq';
       const wrongOpts = opts.filter((o) => o !== correct);
       const pointsVal = Number(existing?.points || 2);
 
       return `
         <div class="question-box admin-q-row" style="margin-bottom:14px;">
-          <div class="card-meta-row" style="margin-bottom:10px;">
-            <span class="q-row-title" style="font-weight:800; color:var(--gold-400);">السؤال (${Number(index)})</span>
-            <button type="button" class="btn btn-danger btn-sm" data-click="removeAdminQuestionRow">${this.icon("trash", 14)} حذف</button>
+          <div class="admin-q-header">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="q-row-num-pill">${Number(index)}</span>
+              <span class="q-row-title" style="font-weight:800; color:var(--text-primary);">السؤال (${Number(index)})</span>
+            </div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <button type="button" class="btn btn-outline-gold btn-sm" data-click="duplicateQuestionRow" title="تكرار هذا السؤال">${this.icon('copy', 13)} <span>تكرار</span></button>
+              <button type="button" class="btn btn-danger btn-sm" data-click="removeAdminQuestionRow">${this.icon('trash', 13)} <span>حذف</span></button>
+            </div>
           </div>
           <div class="grid-3">
             <div class="form-group">
@@ -1370,27 +1804,62 @@ export function registerAdminMethods(proto) {
               </select>
             </div>
             <div class="form-group"><label>المبحث الشرعي</label><input type="text" class="form-control q-topic" placeholder="مثال: أحكام الطلاق" value="${this.esc(existing?.topic_tag || '')}" required /></div>
-            <div class="form-group"><label>الدرجات</label><input type="number" class="form-control q-points" min="1" max="100" value="${Number.isFinite(pointsVal) && pointsVal >= 1 ? pointsVal : 2}" required /></div>
+            <div class="form-group"><label>الدرجات</label><input type="number" class="form-control q-points" min="1" max="100" value="${Number.isFinite(pointsVal) && pointsVal >= 1 ? pointsVal : 2}" data-input="updateExamBuilderSummary" required /></div>
           </div>
           <div class="form-group"><label>نص السؤال</label><input type="text" class="form-control q-text" placeholder="اكتب السؤال أو العبارة الشرعية هنا..." value="${this.esc(existing?.question_text || '')}" required /></div>
-          <div class="q-mcq-fields grid-4" style="${qType === 'true_false' ? 'display:none;' : ''}">
-            <div class="form-group"><label style="color:var(--success-text);">الإجابة الصحيحة</label><input type="text" class="form-control q-opt1" placeholder="الإجابة الصحيحة" value="${this.esc(qType === 'mcq' ? correct : '')}" ${qType === 'mcq' ? 'required' : ''} /></div>
-            <div class="form-group"><label>اختيار خاطئ ١</label><input type="text" class="form-control q-opt2" placeholder="اختيار ٢" value="${this.esc(qType === 'mcq' ? (wrongOpts[0] || '') : '')}" ${qType === 'mcq' ? 'required' : ''} /></div>
-            <div class="form-group"><label>اختيار خاطئ ٢</label><input type="text" class="form-control q-opt3" placeholder="اختيار ٣" value="${this.esc(qType === 'mcq' ? (wrongOpts[1] || '') : '')}" /></div>
-            <div class="form-group"><label>اختيار خاطئ ٣</label><input type="text" class="form-control q-opt4" placeholder="اختيار ٤" value="${this.esc(qType === 'mcq' ? (wrongOpts[2] || '') : '')}" /></div>
+          <div class="q-mcq-fields grid-2" style="${qType === 'true_false' ? 'display:none;' : ''}">
+            <div class="form-group q-correct-field">
+              <label>${this.icon('check-circle', 14)} <span>الإجابة الصحيحة (تُخلط تلقائياً للطلاب)</span></label>
+              <input type="text" class="form-control q-opt1" placeholder="اكتب الإجابة الصحيحة هنا" value="${this.esc(qType === 'mcq' ? correct : '')}" ${qType === 'mcq' ? 'required' : ''} />
+            </div>
+            <div class="form-group">
+              <label>الاختيار الخاطئ ١ (مطلوب)</label>
+              <input type="text" class="form-control q-opt2" placeholder="اختيار مشتّت ١" value="${this.esc(qType === 'mcq' ? (wrongOpts[0] || '') : '')}" ${qType === 'mcq' ? 'required' : ''} />
+            </div>
+            <div class="form-group">
+              <label>الاختيار الخاطئ ٢ (اختياري)</label>
+              <input type="text" class="form-control q-opt3" placeholder="اختيار مشتّت ٢" value="${this.esc(qType === 'mcq' ? (wrongOpts[1] || '') : '')}" />
+            </div>
+            <div class="form-group">
+              <label>الاختيار الخاطئ ٣ (اختياري)</label>
+              <input type="text" class="form-control q-opt4" placeholder="اختيار مشتّت ٣" value="${this.esc(qType === 'mcq' ? (wrongOpts[2] || '') : '')}" />
+            </div>
           </div>
           <div class="q-tf-fields" style="${qType === 'true_false' ? '' : 'display:none;'} margin-bottom:12px;">
-            <div class="form-group" style="margin-bottom:0;">
-              <label>الإجابة الصحيحة (صح أم خطأ)</label>
+            <div class="form-group q-correct-field" style="margin-bottom:0;">
+              <label>${this.icon('check-circle', 14)} <span>الإجابة الصحيحة (صح أم خطأ)</span></label>
               <select class="form-control q-tf-correct">
                 <option value="صح" ${correct !== 'خطأ' ? 'selected' : ''}>العبارة صحيحة (صح)</option>
                 <option value="خطأ" ${correct === 'خطأ' ? 'selected' : ''}>العبارة خاطئة (خطأ)</option>
               </select>
             </div>
           </div>
-          <div class="form-group" style="margin-bottom:0;"><label>التعليل الشرعي (اختياري)</label><input type="text" class="form-control q-exp" placeholder="التوضيح الشرعي للطالب بعد الحل..." value="${this.esc(existing?.explanation || '')}" /></div>
+          <div class="form-group" style="margin-bottom:0;"><label>التعليل الشرعي للطالب بعد التسليم (اختياري)</label><input type="text" class="form-control q-exp" placeholder="التوضيح أو الدليل الشرعي الذي يظهر للطالب بعد الحل..." value="${this.esc(existing?.explanation || '')}" /></div>
         </div>
       `;
+    },
+
+    updateExamBuilderSummary(containerId = 'adminMcqQuestionsList') {
+      const container = document.getElementById(containerId);
+      const summaryEl = document.getElementById('examBuilderMetaSummary');
+      if (!container || !summaryEl) return;
+      const rows = container.querySelectorAll('.admin-q-row');
+      let totalPts = 0;
+      rows.forEach((r) => {
+        totalPts += Math.max(1, Number(r.querySelector('.q-points')?.value || 2) || 2);
+      });
+      summaryEl.innerHTML = `<span><strong>${rows.length}</strong> سؤال</span><span class="exam-summary-sep">•</span><span><strong>${totalPts}</strong> درجة إجمالية</span>`;
+    },
+
+    renumberAdminQuestionRows(container) {
+      if (!container) return;
+      container.querySelectorAll('.admin-q-row').forEach((r, idx) => {
+        const numPill = r.querySelector('.q-row-num-pill');
+        const titleEl = r.querySelector('.q-row-title');
+        if (numPill) numPill.textContent = String(idx + 1);
+        if (titleEl) titleEl.textContent = `السؤال (${idx + 1})`;
+      });
+      if (container.id === 'adminMcqQuestionsList') this.updateExamBuilderSummary('adminMcqQuestionsList');
     },
 
     onAdminQuestionTypeChange(selectEl) {
@@ -1407,6 +1876,35 @@ export function registerAdminMethods(proto) {
       if (opt2) opt2.required = !isTf;
     },
 
+    duplicateQuestionRow(btnEl) {
+      const row = btnEl.closest('.admin-q-row');
+      const container = row ? row.parentElement : null;
+      if (!row || !container) return;
+      const qType = row.querySelector('.q-type')?.value === 'true_false' ? 'true_false' : 'mcq';
+      const existing = {
+        question_type: qType,
+        topic_tag: row.querySelector('.q-topic')?.value || '',
+        points: Number(row.querySelector('.q-points')?.value || 2),
+        question_text: row.querySelector('.q-text')?.value || '',
+        explanation: row.querySelector('.q-exp')?.value || '',
+        correct_option: qType === 'true_false'
+          ? (row.querySelector('.q-tf-correct')?.value || 'صح')
+          : (row.querySelector('.q-opt1')?.value || ''),
+        options: qType === 'true_false'
+          ? ['صح', 'خطأ']
+          : [
+              row.querySelector('.q-opt1')?.value || '',
+              row.querySelector('.q-opt2')?.value || '',
+              row.querySelector('.q-opt3')?.value || '',
+              row.querySelector('.q-opt4')?.value || ''
+            ].filter(Boolean)
+      };
+      const div = document.createElement('div');
+      div.innerHTML = this.renderAdminQuestionInputRow(container.querySelectorAll('.admin-q-row').length + 1, existing, qType);
+      row.insertAdjacentElement('afterend', div.firstElementChild);
+      this.renumberAdminQuestionRows(container);
+    },
+
     removeAdminQuestionRow(btnEl) {
       const row = btnEl.closest('.admin-q-row');
       const container = row ? row.parentElement : null;
@@ -1416,19 +1914,19 @@ export function registerAdminMethods(proto) {
         return;
       }
       row.remove();
-      container.querySelectorAll('.admin-q-row').forEach((r, idx) => {
-        const titleEl = r.querySelector('.q-row-title');
-        if (titleEl) titleEl.textContent = `السؤال (${idx + 1})`;
-      });
+      this.renumberAdminQuestionRows(container);
     },
 
-    addMoreQuestionRow(containerId = 'adminMcqQuestionsList') {
+    addMoreQuestionRow(containerId = 'adminMcqQuestionsList', defaultType = 'mcq') {
       const container = document.getElementById(containerId);
       if (!container) return;
       const count = container.querySelectorAll('.admin-q-row').length + 1;
       const div = document.createElement('div');
-      div.innerHTML = this.renderAdminQuestionInputRow(count);
-      container.appendChild(div.firstElementChild);
+      div.innerHTML = this.renderAdminQuestionInputRow(count, null, defaultType);
+      const inserted = div.firstElementChild;
+      container.appendChild(inserted);
+      if (containerId === 'adminMcqQuestionsList') this.updateExamBuilderSummary('adminMcqQuestionsList');
+      try { inserted.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch {}
     },
 
     async uploadToBunnyStream(inputEl) {
@@ -1665,14 +2163,25 @@ export function registerAdminMethods(proto) {
       }
     },
 
+    async openAssessmentEditorDirect(assessmentId, lessonId) {
+      try {
+        const data = await this.api(`/api/admin/lessons/${Number(lessonId)}/assessments`);
+        this._loadedLessonAssessments = data.assessments || [];
+        this._assessmentEditorReturnToStudio = true;
+        this.openEditAssessmentModal(assessmentId, lessonId);
+      } catch (err) {
+        this.showToast(err.message, 'danger');
+      }
+    },
+
     openEditAssessmentModal(assessmentId, lessonId) {
       const a = (this._loadedLessonAssessments || []).find((x) => x.id === assessmentId);
       if (!a) return;
       const toLocal = (iso) => iso ? new Date(new Date(iso).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : '';
       this.openModal(`
         <div class="card-meta-row">
-          <h3 style="color:var(--gold-400); font-size:1.05rem;">${this.icon("edit", 14)} تعديل الاختبار والأسئلة</h3>
-          <button class="btn btn-danger btn-sm" data-click="closeModal">${this.icon("x", 14)} إغلاق</button>
+          <h3 style="color:var(--gold-400); font-size:1.05rem;">${this.icon('edit', 15)} تعديل الاختبار والأسئلة</h3>
+          <button class="btn btn-danger btn-sm" data-click="closeModal">${this.icon('x', 14)} إغلاق</button>
         </div>
         <form data-submit="handleEditAssessmentSubmit" data-id="${Number(a.id)}" data-lesson-id="${Number(lessonId)}">
           <div class="grid-3">
@@ -1688,11 +2197,14 @@ export function registerAdminMethods(proto) {
             ${(a.questions || []).map((q, idx) => this.renderAdminQuestionInputRow(idx + 1, q)).join('')}
           </div>
           <div class="card-meta-row" style="margin-top:12px; margin-bottom:0;">
-            <button type="button" class="btn btn-outline-gold btn-sm" data-click="addMoreQuestionRow" data-container="editExamQuestionsList">${this.icon("plus", 15)} إضافة سؤال</button>
-            <button type="submit" class="btn btn-gold">${this.icon("save", 15)} حفظ التعديلات</button>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <button type="button" class="btn btn-outline-gold btn-sm" data-click="addMoreQuestionRow" data-container="editExamQuestionsList" data-qtype="mcq">${this.icon('plus', 14)} <span>اختيار من متعدد</span></button>
+              <button type="button" class="btn btn-outline-gold btn-sm" data-click="addMoreQuestionRow" data-container="editExamQuestionsList" data-qtype="true_false">${this.icon('check-circle', 14)} <span>صح أم خطأ</span></button>
+            </div>
+            <button type="submit" class="btn btn-gold">${this.icon('save', 15)} <span>حفظ التعديلات</span></button>
           </div>
         </form>
-      `, '760px');
+      `, '780px');
     },
 
     collectQuestionsFromContainer(containerSelector) {
@@ -1736,30 +2248,39 @@ export function registerAdminMethods(proto) {
         });
         this.showToast(res.message, 'success');
         await this.loadAdminDashboard(true);
-        await this.openLessonAssessmentsModal(lessonId);
+        if (this._assessmentEditorReturnToStudio || this.adminTab === 'exams') {
+          this._assessmentEditorReturnToStudio = false;
+          this.closeModal();
+        } else {
+          await this.openLessonAssessmentsModal(lessonId);
+        }
       } catch (err) {
         this.showToast(err.message, 'danger');
       }
     },
 
-    async toggleAssessmentActive(assessmentId, nextActive, lessonId) {
+    async toggleAssessmentActive(assessmentId, nextActive, lessonId, source = '') {
       try {
         const res = await this.api(`/api/admin/assessments/${Number(assessmentId)}`, { method: 'PUT', body: JSON.stringify({ is_active: Boolean(nextActive) }) });
         this.showToast(res.message, 'success');
         await this.loadAdminDashboard(true);
-        await this.openLessonAssessmentsModal(lessonId);
+        if (source !== 'studio' && this.adminTab !== 'exams') {
+          await this.openLessonAssessmentsModal(lessonId);
+        }
       } catch (err) {
         this.showToast(err.message, 'danger');
       }
     },
 
-    async deleteAssessment(assessmentId, lessonId) {
+    async deleteAssessment(assessmentId, lessonId, source = '') {
       if (!window.confirm('هل أنت متأكد من حذف هذا الاختبار وجميع أسئلته ونتائجه نهائياً؟')) return;
       try {
         const res = await this.api(`/api/admin/assessments/${Number(assessmentId)}`, { method: 'DELETE' });
         this.showToast(res.message, 'success');
         await this.loadAdminDashboard(true);
-        await this.openLessonAssessmentsModal(lessonId);
+        if (source !== 'studio' && this.adminTab !== 'exams') {
+          await this.openLessonAssessmentsModal(lessonId);
+        }
       } catch (err) {
         this.showToast(err.message, 'danger');
       }
@@ -1796,7 +2317,8 @@ export function registerAdminMethods(proto) {
           })
         });
         this.showToast(res.message, 'success');
-        this.adminTab = 'lessons_list';
+        this.adminTab = 'exams';
+        this.adminExamSubTab = 'list';
         await this.loadAdminDashboard(true);
       } catch (err) {
         this.showToast(err.message, 'danger');
@@ -2319,6 +2841,7 @@ export function registerAdminMethods(proto) {
         div.innerHTML = this.renderAdminQuestionInputRow(startIdx, q);
         container.appendChild(div.firstElementChild);
       }
+      if (containerId === 'adminMcqQuestionsList') this.updateExamBuilderSummary('adminMcqQuestionsList');
       this.closeModal();
       this.showToast(`تم استيراد ${parsed.length} سؤالاً إلى الاختبار بنجاح!`, 'success');
     },
