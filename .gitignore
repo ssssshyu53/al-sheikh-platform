@@ -1,0 +1,62 @@
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+!whatsapp-bot/.env.example
+*.key
+*.pem
+*.p12
+auth.json
+id_rsa*
+
+# SQLite Databases & WAL/SHM files
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+data/
+
+# Uploaded User/Teacher Media, Dumps & Backups
+uploads/videos/*
+!uploads/videos/.gitkeep
+uploads/pdfs/*
+!uploads/pdfs/.gitkeep
+backups/
+logs/
+*.log
+error_log
+*.dump
+*.sql.bak
+
+# Local Ops Tools & Scratch
+/tools
+/scratch
+deploy_*.py
+
+# Large Binaries & Archives
+*.apk
+*.aab
+*.ipa
+*.tar.gz
+*.zip
+
+# Dependencies & Build Artifacts
+node_modules/
+vendor/
+__pycache__/
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Flutter / Mobile Build Artifacts
+mobile_app/.dart_tool/
+mobile_app/build/
+mobile_app/.flutter-plugins
+mobile_app/.flutter-plugins-dependencies
+
+# WhatsApp Pull-Worker Bot (sessions, secrets & deps)
+whatsapp-bot/node_modules/
+whatsapp-bot/auth_info/
+whatsapp-bot/.env
+whatsapp-bot/.bot_token

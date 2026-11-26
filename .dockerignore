@@ -1,0 +1,17 @@
+.env
+.env.*
+*.db
+*.db-wal
+*.db-shm
+node_modules/
+backups/
+logs/
+mobile_app/
+uploads/videos/*
+!uploads/videos/.gitkeep
+uploads/pdfs/*
+!uploads/pdfs/.gitkeep
+whatsapp-bot/node_modules/
+whatsapp-bot/auth_info/
+whatsapp-bot/.env
+whatsapp-bot/.bot_token

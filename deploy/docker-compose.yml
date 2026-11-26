@@ -1,0 +1,15 @@
+services:
+  matn-platform:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: matn-platform
+    restart: always
+    ports:
+      - "127.0.0.1:4000:4000"
+    env_file:
+      - ../.env
+    volumes:
+      - ../data:/app/data
+      - ../uploads:/app/uploads
+      - ../backups:/app/backups

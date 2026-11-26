@@ -1,0 +1,27 @@
+{
+  "name": "matn-al-sheikh-platform",
+  "version": "3.0.0",
+  "description": "منصة مَتْن (MATN) التعليمية - الأستاذ محمد عبد الله للمواد الشرعية للثانوية الأزهرية",
+  "main": "server.js",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "mysql2": "^3.11.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "setup:env": "node scripts/setup-env.js",
+    "setup:admin": "node scripts/setup-admin.js",
+    "seed:dev": "node scripts/seed-dev.js",
+    "db:migrate": "node db/migrations.js",
+    "db:backup": "node scripts/backup-db.js backup",
+    "db:restore": "node scripts/backup-db.js restore",
+    "preflight": "node scripts/preflight.js",
+    "test": "node --test tests/security.test.js",
+    "test:load": "node scripts/load-test.js"
+  },
+  "author": "الأستاذ محمد عبد الله - منصة مَتْن",
+  "license": "PROPRIETARY"
+}
